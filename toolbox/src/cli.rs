@@ -36,14 +36,16 @@ impl App {
                                     .takes_value(true),
                             )
                             .arg(
-                                Arg::with_name("VARIABLE")
+                                Arg::with_name("variable")
                                     .help("The environment variable name for the new secret")
+                                    .value_name("VARIABLE")
                                     .required(true)
                                     .index(1),
                             )
                             .arg(
-                                Arg::with_name("VALUE")
+                                Arg::with_name("value")
                                     .help("The value of the new secret")
+                                    .value_name("VALUE")
                                     .required(true)
                                     .index(2),
                             ),

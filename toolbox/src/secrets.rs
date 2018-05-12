@@ -58,8 +58,8 @@ impl App {
 
             let environment = Environment::from_name(environment_name)?;
 
-            let secret_name = Self::read_arg(matches, "VARIABLE")?;
-            let secret = Self::read_arg(matches, "VALUE")?;
+            let secret_name = Self::read_arg(matches, "variable")?;
+            let secret = Self::read_arg(matches, "value")?;
 
             Ok(SecretsApp::Write {
                 environment,
