@@ -2,3 +2,7 @@
 name = "toolbox"
 version = "0.0.1"
 publish = false
+
+[dependencies]
+failure = "0.1.1"
+failure_derive = "0.1.1"
