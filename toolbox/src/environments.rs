@@ -15,11 +15,12 @@ pub enum Environment {
 
 impl Environment {
     pub fn from_name(name: &str) -> Result<Self, Error> {
-        match name {
-            "development" => Ok(Environment::Development),
-            _ => Err(UnknownEnvironment {
+        if name == DEFAULT_ENVIRONMENT_NAME {
+            Ok(Environment::Development)
+        } else {
+            Err(UnknownEnvironment {
                 name: name.to_string(),
-            })?,
+            })?
         }
     }
 }
