@@ -3,7 +3,6 @@ extern crate rprompt;
 extern crate toml;
 extern crate xdg;
 
-extern crate env_logger;
 #[macro_use]
 extern crate log;
 
@@ -66,7 +65,6 @@ impl PsstApplication {
 }
 
 pub fn new(application: &str) -> Result<PsstApplication, Error> {
-    env_logger::init();
     let xdg_dirs = xdg::BaseDirectories::with_prefix(application)?;
 
     Ok(PsstApplication { xdg_dirs })

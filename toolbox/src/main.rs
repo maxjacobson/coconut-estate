@@ -5,6 +5,8 @@ extern crate failure;
 #[macro_use]
 extern crate failure_derive;
 
+extern crate env_logger;
+
 extern crate psst;
 
 extern crate reqwest;
@@ -31,6 +33,7 @@ fn print_err(err: failure::Error) {
 }
 
 fn main() {
+    env_logger::init();
     match cli::App::new().run() {
         Err(err) => {
             print_err(err);
