@@ -1,6 +1,7 @@
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 use failure::Error;
 
+use provision;
 use secrets;
 
 #[derive(Fail, Debug)]
@@ -19,6 +20,18 @@ impl App {
             .about("CLI for operating production")
             .setting(AppSettings::SubcommandRequired)
             .version(crate_version!())
+            .subcommand(
+                SubCommand::with_name("provision")
+                    .about("Provision a new droplet")
+                    .arg(
+                        Arg::with_name("kind")
+                            .help("The kind of droplet to provision")
+                            .value_name("KIND")
+                            .required(true)
+                            .index(1)
+                            .possible_values(&["secrets_keeper"]),
+                    ),
+            )
             .subcommand(
                 SubCommand::with_name("secrets")
                     .about("Interact with the secrets keeper service")
@@ -55,6 +68,8 @@ impl App {
 
         if let Some(matches) = matches.subcommand_matches("secrets") {
             secrets::App::lookup(matches)?.run()
+        } else if let Some(matches) = matches.subcommand_matches("provision") {
+            provision::App::new(matches)?.run()
         } else {
             Err(UnimplementedValidInputError)?
         }

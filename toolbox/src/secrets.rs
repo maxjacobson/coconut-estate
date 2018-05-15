@@ -1,17 +1,11 @@
 use clap;
+use clap_helpers::read_arg;
 use environments::{self, Environment};
 use failure::Error;
 
 #[derive(Fail, Debug)]
 #[fail(display = "No implementation for the provided, apparently valid, secrets subcommand available. This suggests the CLI says it supports this, you just haven't implemented it yet.")]
 struct UnimplementedSecretsSubcommand;
-
-#[derive(Fail, Debug)]
-#[fail(display = "Expected arg value for {}, but wasn't available. This suggests you tried to read something that the CLI can't actually contain.",
-       name)]
-struct MissingArgError {
-    name: String,
-}
 
 pub enum SecretsApp {
     Write {
@@ -58,8 +52,8 @@ impl App {
 
             let environment = Environment::from_name(environment_name)?;
 
-            let secret_name = Self::read_arg(matches, "variable")?;
-            let secret = Self::read_arg(matches, "value")?;
+            let secret_name = read_arg(matches, "variable")?;
+            let secret = read_arg(matches, "value")?;
 
             Ok(SecretsApp::Write {
                 environment,
@@ -69,14 +63,5 @@ impl App {
         } else {
             Err(UnimplementedSecretsSubcommand)?
         }
-    }
-
-    fn read_arg(matches: &clap::ArgMatches, arg: &str) -> Result<String, Error> {
-        Ok(matches
-            .value_of(arg)
-            .ok_or_else(|| MissingArgError {
-                name: arg.to_string(),
-            })?
-            .to_string())
     }
 }
