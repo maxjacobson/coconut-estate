@@ -1,11 +1,14 @@
 [package]
-name = "toolbox"
+name = "psst"
 version = "0.0.1"
 publish = false
 
 [dependencies]
-clap = "~2.31.2"
 failure = "0.1.1"
 failure_derive = "0.1.1"
-psst = { path = "../psst" }
-reqwest = "0.8.5"
+rprompt = "1.0"
+toml = "0.4.6"
+xdg = "2.1.0"
+
+log = "0.4.0"
+env_logger = "0.5.9"

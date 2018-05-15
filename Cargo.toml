@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "psst",
   "secrets_keeper",
   "toolbox"
 ]
