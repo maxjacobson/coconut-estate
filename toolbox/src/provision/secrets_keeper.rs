@@ -2,6 +2,8 @@ use failure::Error;
 use psst_helper as psst;
 use reqwest;
 
+use std::collections::HashMap;
+
 pub struct Create;
 
 impl Create {
@@ -9,14 +11,20 @@ impl Create {
         println!("Creating a secrets keeper droplet");
         let digital_ocean_api_key = psst::get("digital_ocean_key")?;
 
-        println!(
-            "Successfully retrieved Digital Ocean key: {}",
+        // TODO: extract the digital ocean client somewhere re-usable
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(reqwest::header::Authorization(format!(
+            "Bearer {}",
             digital_ocean_api_key
-        );
+        )));
+        let client = reqwest::Client::builder().default_headers(headers).build()?;
 
-        let body = reqwest::get("https://www.hardscrabble.net")?.text()?;
+        let mut map = HashMap::new();
+        map.insert("lang", "rust");
+        map.insert("body", "json");
+        let response = client.post("http://httpbin.org/post").json(&map).send()?;
 
-        println!("{}", body);
+        println!("{:#?}", response);
 
         Ok(())
     }
