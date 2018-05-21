@@ -1,6 +1,6 @@
 [[package]]
 name = "actix"
-version = "0.5.6"
+version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "actix_derive 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -22,10 +22,10 @@ dependencies = [
 
 [[package]]
 name = "actix-web"
-version = "0.6.4"
+version = "0.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "actix 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "actix 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "base64 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "brotli2 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1237,8 +1237,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "secrets_keeper"
 version = "0.0.1"
 dependencies = [
- "actix 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "actix-web 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "actix 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "actix-web 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1905,8 +1905,8 @@ version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum actix 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)" = "e767e3170dc7cdec50fe1b74d22fd9d2f4b78b97b2052a254b5acb07dae68634"
-"checksum actix-web 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "c9b236d41ef0e71cbd8d0e94bdcad626e17ddc773f6147dd9a35d1ab6bdd260d"
+"checksum actix 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)" = "7f01f05bfb6e77d47a04752efdac401e0e20b49130ac673cde367cda8eb7c92c"
+"checksum actix-web 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)" = "4d76986d00f6bc35f1d5f53759585018a6fd775e1ecbfbf510baf2252a8f1074"
 "checksum actix_derive 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c4b1dc922654b9aca7a8a31eab875fde804fa9fbd67f220f2e457787b23590f2"
 "checksum adler32 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6cbd0b9af8587c72beadc9f72d35b9fbb070982c9e6203e46e93f10df25f8f45"
 "checksum aho-corasick 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "d6531d44de723825aa81398a6415283229725a00fa30713812ab9323faa82fc4"
