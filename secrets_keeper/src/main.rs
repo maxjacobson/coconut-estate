@@ -2,15 +2,26 @@
 extern crate clap;
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 
+#[macro_use]
+extern crate serde_derive;
+
 extern crate actix_web;
-use actix_web::{middleware, server, App, HttpRequest};
+use actix_web::{middleware, server, App, HttpResponse, Json, http::Method};
 
 extern crate env_logger;
 #[macro_use]
 extern crate log;
 
-fn index(_req: HttpRequest) -> &'static str {
-    "Hello world!"
+#[derive(Debug, Deserialize)]
+struct Secret {
+    name: String,
+    value: String,
+}
+
+fn create_secret(secret: Json<Secret>) -> HttpResponse {
+    println!("secret: {:#?}", secret);
+
+    HttpResponse::Ok().into()
 }
 
 fn main() {
@@ -39,8 +50,8 @@ fn main() {
 
         server::new(|| {
             App::new()
-                .resource("/", |r| r.f(index))
                 .middleware(middleware::Logger::default())
+                .resource("/secrets", |r| r.method(Method::POST).with(create_secret))
         }).bind(&binding)
             .expect(&format!("Can not bind to {}", binding))
             .run();

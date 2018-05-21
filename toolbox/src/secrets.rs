@@ -50,7 +50,10 @@ impl SecretsApp {
             .send()?;
 
         match response.status() {
-            reqwest::StatusCode::Ok => Ok(()),
+            reqwest::StatusCode::Ok => {
+                println!("Success!");
+                Ok(())
+            }
             status @ _ => Err(UnexpectedResponseFromSecretsKeeper { status })?,
         }
     }
