@@ -23,4 +23,10 @@ impl Environment {
             })?
         }
     }
+
+    pub fn secrets_keeper_root(&self) -> String {
+        match self {
+            Environment::Development => "http://localhost:5001".to_string(),
+        }
+    }
 }
