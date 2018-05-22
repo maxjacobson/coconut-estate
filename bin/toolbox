@@ -2,16 +2,4 @@
 
 set -e
 
-# development
-toolbox="cargo run --package toolbox --"
-
-if ! test -z "$FAST"; then
-  toolbox="target/release/toolbox"
-  if ! test -f "$toolbox"; then
-    echo "[$(date)] Building missing fast build of toolbox"
-    time cargo build --quiet --release --package toolbox
-  fi
-fi
-
-RUST_LOG="psst=debug" \
-  $toolbox $*
+RUST_LOG="psst=debug" bin/run-package toolbox $*
