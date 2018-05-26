@@ -49,6 +49,15 @@ impl App {
                                     .takes_value(true),
                             )
                             .arg(
+                                Arg::with_name("group")
+                                    .short("g")
+                                    .long("group")
+                                    .value_name("GROUP")
+                                    .help("Which group of secrets does this secret belong to?")
+                                    .required(true)
+                                    .takes_value(true),
+                            )
+                            .arg(
                                 Arg::with_name("variable")
                                     .help("The environment variable name for the new secret")
                                     .value_name("VARIABLE")

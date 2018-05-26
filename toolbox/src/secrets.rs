@@ -18,6 +18,7 @@ struct UnexpectedResponseFromSecretsKeeper {
 pub enum SecretsApp {
     Write {
         environment: Environment,
+        group: String,
         secret_name: String,
         secret: String,
     },
@@ -28,20 +29,23 @@ impl SecretsApp {
         match self {
             &SecretsApp::Write {
                 ref environment,
+                ref group,
                 ref secret_name,
                 ref secret,
-            } => Ok(self.write_secret(environment, secret_name, secret)?),
+            } => Ok(self.write_secret(environment, group, secret_name, secret)?),
         }
     }
 
     fn write_secret(
         &self,
         environment: &Environment,
+        group: &str,
         secret_name: &str,
         secret: &str,
     ) -> Result<(), Error> {
         let client = reqwest::Client::new();
         let mut body = HashMap::new();
+        body.insert("group", group);
         body.insert("name", secret_name);
         body.insert("value", secret);
         let response = client
@@ -76,11 +80,13 @@ impl App {
 
             let environment = Environment::from_name(environment_name)?;
 
+            let group = read_arg(matches, "group")?;
             let secret_name = read_arg(matches, "variable")?;
             let secret = read_arg(matches, "value")?;
 
             Ok(SecretsApp::Write {
                 environment,
+                group,
                 secret_name,
                 secret,
             })

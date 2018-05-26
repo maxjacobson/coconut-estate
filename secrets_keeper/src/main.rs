@@ -16,7 +16,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 
 #[derive(Debug)]
 struct AppState {
@@ -25,6 +25,7 @@ struct AppState {
 
 #[derive(Debug, Deserialize)]
 struct Secret {
+    group: String,
     name: String,
     value: String,
 }
@@ -33,7 +34,11 @@ fn create_secret(data: (HttpRequest<AppState>, Json<Secret>)) -> HttpResponse {
     let (req, secret) = data;
     let state: &AppState = req.state();
 
-    let path = Path::new(&state.location).join(&secret.name);
+    let dir = Path::new(&state.location).join(&secret.group);
+    if !Path::exists(&dir) {
+        fs::create_dir_all(&dir).unwrap(); // TODO: add failure
+    }
+    let path = dir.join(&secret.name);
     if !Path::exists(&path) {
         File::create(&path).unwrap(); // TODO: add failure
     }
