@@ -37,6 +37,35 @@ impl App {
                     .about("Interact with the secrets keeper service")
                     .setting(AppSettings::SubcommandRequired)
                     .subcommand(
+                        SubCommand::with_name("read")
+                            .about("Reads secrest from the secrets keeper service")
+                            .arg(
+                                Arg::with_name("environment")
+                                    .short("e")
+                                    .long("env")
+                                    .value_name("ENVIRONMENT")
+                                    .help("Specifies which environment to target")
+                                    .required(false)
+                                    .takes_value(true),
+                            )
+                            .arg(
+                                Arg::with_name("group")
+                                    .short("g")
+                                    .long("group")
+                                    .value_name("GROUP")
+                                    .help("Which group of secrets to read from")
+                                    .required(true)
+                                    .takes_value(true),
+                            )
+                            .arg(
+                                Arg::with_name("variable")
+                                    .help("The environment variable you'd like to read")
+                                    .value_name("VARIABLE")
+                                    .required(false)
+                                    .index(1),
+                            ),
+                    )
+                    .subcommand(
                         SubCommand::with_name("write")
                             .about("Write secrets to the secrets keeper service")
                             .arg(

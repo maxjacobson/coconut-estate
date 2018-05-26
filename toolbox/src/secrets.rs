@@ -16,6 +16,11 @@ struct UnexpectedResponseFromSecretsKeeper {
 }
 
 pub enum SecretsApp {
+    Read {
+        environment: Environment,
+        group: String,
+        secret_name: Option<String>,
+    },
     Write {
         environment: Environment,
         group: String,
@@ -27,6 +32,11 @@ pub enum SecretsApp {
 impl SecretsApp {
     pub fn run(&self) -> Result<(), Error> {
         match self {
+            &SecretsApp::Read {
+                ref environment,
+                ref group,
+                ref secret_name,
+            } => Ok(self.read_secret(environment, group, secret_name)?),
             &SecretsApp::Write {
                 ref environment,
                 ref group,
@@ -34,6 +44,28 @@ impl SecretsApp {
                 ref secret,
             } => Ok(self.write_secret(environment, group, secret_name, secret)?),
         }
+    }
+
+    fn read_secret(
+        &self,
+        environment: &Environment,
+        group: &str,
+        secret_name: &Option<String>,
+    ) -> Result<(), Error> {
+        let client = reqwest::Client::new();
+
+        let mut response = match secret_name {
+            Some(secret_name) => client
+                .get(&self.secrets_path(environment))
+                .query(&[("group", group), ("secret", secret_name)])
+                .send()?,
+            None => client
+                .get(&self.secrets_path(environment))
+                .query(&[("group", group)])
+                .send()?,
+        };
+
+        self.validate_response(&mut response, true)
     }
 
     fn write_secret(
@@ -48,24 +80,43 @@ impl SecretsApp {
         body.insert("group", group);
         body.insert("name", secret_name);
         body.insert("value", secret);
-        let response = client
-            .post(&self.write_secret_path_for(environment))
+        let mut response = client
+            .post(&self.secrets_path(environment))
             .json(&body)
             .send()?;
 
-        match response.status() {
-            reqwest::StatusCode::Ok => {
-                println!("Success!");
-                Ok(())
-            }
-            status @ _ => Err(UnexpectedResponseFromSecretsKeeper { status })?,
-        }
+        self.validate_response(&mut response, false)
     }
 
     // N.B.: this might become more complicated later on when tunneling
     // requests through the bastion, but ... hopefully not?
-    fn write_secret_path_for(&self, environment: &Environment) -> String {
-        (environment.secrets_keeper_root() + "/secrets").to_string()
+    fn secrets_path(&self, environment: &Environment) -> String {
+        format!("{}/secrets", environment.secrets_keeper_root())
+    }
+
+    fn validate_response(
+        &self,
+        response: &mut reqwest::Response,
+        print_body: bool,
+    ) -> Result<(), Error> {
+        match response.status() {
+            reqwest::StatusCode::Ok => match response.text() {
+                Ok(text) => {
+                    if print_body {
+                        println!("{}", text);
+                    } else {
+                        println!("Success!");
+                    }
+
+                    Ok(())
+                }
+                e @ _ => {
+                    println!("Welp, couldn't read response body because {:?}", e);
+                    Ok(())
+                }
+            },
+            status @ _ => Err(UnexpectedResponseFromSecretsKeeper { status })?,
+        }
     }
 }
 
@@ -73,7 +124,20 @@ pub struct App;
 
 impl App {
     pub fn lookup(matches: &clap::ArgMatches) -> Result<SecretsApp, Error> {
-        if let Some(matches) = matches.subcommand_matches("write") {
+        if let Some(matches) = matches.subcommand_matches("read") {
+            let environment_name = matches
+                .value_of("environment")
+                .unwrap_or(environments::DEFAULT_ENVIRONMENT_NAME);
+            let environment = Environment::from_name(environment_name)?;
+            let group = read_arg(matches, "group")?;
+            let secret_name: Option<String> = matches.value_of("variable").map(|s| s.to_string());
+
+            Ok(SecretsApp::Read {
+                environment,
+                group,
+                secret_name,
+            })
+        } else if let Some(matches) = matches.subcommand_matches("write") {
             let environment_name = matches
                 .value_of("environment")
                 .unwrap_or(environments::DEFAULT_ENVIRONMENT_NAME);
