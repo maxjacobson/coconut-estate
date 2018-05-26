@@ -20,7 +20,7 @@ mod psst_helper;
 mod secrets;
 
 fn print_fail(fail: &failure::Fail) {
-    println!("fail: {:?}", fail);
+    println!("fail: {:#?}", fail);
 
     if let Some(cause) = fail.cause() {
         print_fail(cause);
