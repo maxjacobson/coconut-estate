@@ -16,4 +16,4 @@ if ! test -z "$FAST"; then
   fi
 fi
 
-$invocation $*
+$invocation "$@"

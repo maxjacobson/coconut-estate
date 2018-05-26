@@ -2,4 +2,4 @@
 
 set -e
 
-RUST_LOG="psst=debug" bin/run-package toolbox $*
+RUST_LOG="psst=debug" bin/run-package toolbox "$@"
