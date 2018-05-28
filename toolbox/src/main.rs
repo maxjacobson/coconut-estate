@@ -19,6 +19,8 @@ mod provision;
 mod psst_helper;
 mod secrets;
 
+use std::process;
+
 fn print_fail(fail: &failure::Fail) {
     println!("fail: {:#?}", fail);
 
@@ -37,6 +39,7 @@ fn main() {
     match cli::App::new().run() {
         Err(err) => {
             print_err(err);
+            process::exit(1);
 
             // while let Some(cause) = fail.cause() {
             //     println!("{}", cause);
