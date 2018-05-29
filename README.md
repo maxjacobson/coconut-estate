@@ -4,6 +4,25 @@
 
 * Install Rust 1.26+ <https://rustup.rs/>
 
+## Building for production
+
+This is somewhat hypothetical, but I think the idea is:
+
+* Make sure you've got `rustup` installed and the right toolchain/target installed:
+
+  ```shell
+  rustup target add --toolchain stable x86_64-unknown-linux-gnu
+  ```
+
+* Cross-compile the binary for a linux server on production:
+
+  ```shell
+  cargo build --release --target=x86_64-unknown-linux-gnu --package secrets_keeper
+
+  # find the binary here:
+  find target/x86_64-unknown-linux-gnu/release -name "*secrets_keeper"
+  ```
+
 ## Style guide
 
 - For Rust code: run `rustfmt`
