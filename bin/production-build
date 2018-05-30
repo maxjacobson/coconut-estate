@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+package="$1"
+shift
+
+kernel="$(uname)"
+
+if [ "$kernel" = "Darwin" ]; then
+  docker run --rm --interactive --tty \
+    --volume "$(PWD):/code" \
+    --workdir /code \
+    rust:1.26.1 cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
+else
+  cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
+fi

@@ -17,7 +17,7 @@ This is somewhat hypothetical, but I think the idea is:
 * Cross-compile the binary for a linux server on production:
 
   ```shell
-  cargo build --release --target=x86_64-unknown-linux-gnu --package secrets_keeper
+  bin/production-build secrets_keeper
 
   # find the binary here:
   find target/x86_64-unknown-linux-gnu/release -name "*secrets_keeper"
