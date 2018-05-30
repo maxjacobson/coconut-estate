@@ -2,8 +2,10 @@ use clap;
 use failure::Error;
 
 #[derive(Fail, Debug)]
-#[fail(display = "Expected arg value for {}, but wasn't available. This suggests you tried to read something that the CLI can't actually contain.",
-       name)]
+#[fail(
+    display = "Expected arg value for {}, but wasn't available. This suggests you tried to read something that the CLI can't actually contain.",
+    name
+)]
 struct MissingArgError {
     name: String,
 }

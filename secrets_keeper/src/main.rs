@@ -6,8 +6,8 @@ use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 extern crate serde_derive;
 
 extern crate actix_web;
-use actix_web::{middleware, server, App, HttpRequest, HttpResponse, Json, Query, Result,
-                http::Method};
+use actix_web::{http::Method, middleware, server, App, HttpRequest, HttpResponse, Json, Query,
+                Result};
 
 extern crate env_logger;
 #[macro_use]

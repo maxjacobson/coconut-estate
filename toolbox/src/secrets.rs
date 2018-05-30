@@ -6,7 +6,9 @@ use reqwest;
 use std::collections::HashMap;
 
 #[derive(Fail, Debug)]
-#[fail(display = "No implementation for the provided, apparently valid, secrets subcommand available. This suggests the CLI says it supports this, you just haven't implemented it yet.")]
+#[fail(
+    display = "No implementation for the provided, apparently valid, secrets subcommand available. This suggests the CLI says it supports this, you just haven't implemented it yet."
+)]
 struct UnimplementedSecretsSubcommand;
 
 #[derive(Fail, Debug)]
