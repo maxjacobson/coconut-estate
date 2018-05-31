@@ -13,10 +13,11 @@ shift
 # development
 invocation="cargo run --package $package --"
 
+# This just lets you skip the compilation step if you know the source code hasn't changed
 if ! test -z "$FAST"; then
-  invocation="target/release/$package"
+  invocation="target/debug/$package"
   if ! test -f "$invocation"; then
-    time cargo build --release --package $package
+    cargo build --quiet --package $package
   fi
 fi
 
