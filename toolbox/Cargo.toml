@@ -6,6 +6,7 @@ publish = false
 [dependencies]
 clap = "~2.31.2"
 env_logger = "0.5.9"
+log = "0.4.1"
 failure = "0.1.1"
 failure_derive = "0.1.1"
 psst = { path = "../psst" }

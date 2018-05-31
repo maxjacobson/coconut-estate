@@ -8,7 +8,7 @@ pub struct Create;
 
 impl Create {
     pub fn run() -> Result<(), Error> {
-        println!("Creating a secrets keeper droplet");
+        info!("Creating a secrets keeper droplet");
         let digital_ocean_api_key = psst::get("digital_ocean_key")?;
 
         // TODO: extract the digital ocean client somewhere re-usable

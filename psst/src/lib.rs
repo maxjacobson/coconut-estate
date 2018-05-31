@@ -38,7 +38,7 @@ impl PsstApplication {
 
         {
             if let Some(value) = table.get(key) {
-                info!("Using {} value from {:?}", key, path);
+                debug!("Using {} value from {:?}", key, path);
                 return Ok(value.to_string());
             }
         }
@@ -49,7 +49,7 @@ impl PsstApplication {
 
         let new_toml = toml::to_string(&new_table)?;
 
-        info!("Updating {:?} with new value", path);
+        debug!("Updating {:?} with new value", path);
         let mut file = OpenOptions::new().write(true).open(&path)?;
         file.write_all(new_toml.as_bytes())?;
 
@@ -57,7 +57,7 @@ impl PsstApplication {
     }
 
     fn get_new_value_for(&self, key: &str) -> Result<String, Error> {
-        info!("Prompting for new value for {}", key);
+        debug!("Prompting for new value for {}", key);
         let reply = rprompt::prompt_reply_stdout(&format!("Please provide a value for {}: ", key))?;
 
         Ok(reply)

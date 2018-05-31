@@ -6,6 +6,8 @@ extern crate failure;
 extern crate failure_derive;
 
 extern crate env_logger;
+#[macro_use]
+extern crate log;
 
 extern crate psst;
 
