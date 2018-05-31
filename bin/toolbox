@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# N.B.
+# This file is intended for use in your development environment, and not
+# production
+
 set -e
 
-RUST_LOG="psst=debug" bin/run-package toolbox "$@"
+RUST_LOG="psst=debug" bin/helpers/run-package toolbox "$@"

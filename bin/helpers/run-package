@@ -3,6 +3,11 @@
 set -e
 
 package="$1"
+
+if [ -z "$package" ]; then
+  echo "Usage: $0 <package name>"
+  exit 1
+fi
 shift
 
 # development
@@ -11,8 +16,7 @@ invocation="cargo run --package $package --"
 if ! test -z "$FAST"; then
   invocation="target/release/$package"
   if ! test -f "$invocation"; then
-    echo "[$(date)] Building missing fast build of $package"
-    time cargo build --quiet --release --package $package
+    time cargo build --release --package $package
   fi
 fi
 

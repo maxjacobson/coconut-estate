@@ -3,7 +3,11 @@
 set -e
 
 package="$1"
-shift
+
+if [ -z "$package" ]; then
+  echo "Usage: $0 <package name>"
+  exit 1
+fi
 
 kernel="$(uname)"
 
