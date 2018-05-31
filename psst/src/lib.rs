@@ -1,4 +1,6 @@
 extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 extern crate rprompt;
 extern crate toml;
 extern crate xdg;
@@ -13,6 +15,12 @@ use std::path::Path;
 use std::fs::OpenOptions;
 
 use failure::Error;
+
+#[derive(Fail, Debug)]
+#[fail(display = "Expected {} to be a string, but it wasn't", key)]
+struct NotStringError {
+    key: String,
+}
 
 pub struct PsstApplication {
     xdg_dirs: xdg::BaseDirectories,
@@ -39,7 +47,13 @@ impl PsstApplication {
         {
             if let Some(value) = table.get(key) {
                 debug!("Using {} value from {:?}", key, path);
-                return Ok(value.to_string());
+                if let Some(str_value) = value.as_str() {
+                    return Ok(str_value.to_string());
+                } else {
+                    Err(NotStringError {
+                        key: key.to_string(),
+                    })?;
+                }
             }
         }
 
