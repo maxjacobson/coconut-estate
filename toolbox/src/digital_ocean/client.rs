@@ -29,6 +29,17 @@ impl Client {
         })
     }
 
+    pub fn list_droplets(&self, tag_name: &str) -> Result<Droplets, Error> {
+        // TODO: check the status to avoid inscrutable errors trying to parse an error response as
+        // a happy response
+        let droplets_response: Droplets = self.http
+            .get("https://api.digitalocean.com/v2/droplets")
+            .query(&[("tag_name", tag_name)])
+            .send()?
+            .json()?;
+        Ok(droplets_response)
+    }
+
     pub fn create_ssh_key(&self, name: &str, public_key: &str) -> Result<SshKey, Error> {
         let body = CreateSshKey {
             name: name.to_string(),
@@ -156,4 +167,31 @@ struct CreateSshKey {
 #[derive(Debug, Deserialize)]
 struct CreatedSshKey {
     ssh_key: SshKey,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Droplets {
+    pub droplets: Vec<Droplet>,
+}
+
+// TODO: add volume_ids
+#[derive(Deserialize, Debug)]
+pub struct Droplet {
+    id: u64,
+    features: Vec<String>,
+    name: String,
+    status: String,
+    networks: Networks,
+}
+
+#[derive(Deserialize, Debug)]
+struct Networks {
+    v4: Vec<V4Network>,
+}
+
+#[derive(Deserialize, Debug)]
+struct V4Network {
+    ip_address: String,
+    netmask: String,
+    gateway: String,
 }

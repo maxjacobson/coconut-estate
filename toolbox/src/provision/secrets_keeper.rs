@@ -1,4 +1,3 @@
-// TODO: use the new DO client struct... it was inspired by this
 use digital_ocean::Client as DigitalOcean;
 use failure::Error;
 use psst_helper as psst;
@@ -35,15 +34,10 @@ impl Create {
         }));
         headers.set(reqwest::header::ContentType::json());
 
+        let client = DigitalOcean::new()?;
         let deprecated_client = reqwest::Client::builder().default_headers(headers).build()?;
 
-        // TODO: check the status to avoid inscrutable errors trying to parse an error response as
-        // a happy response
-        let droplets_response: Droplets = deprecated_client
-            .get("https://api.digitalocean.com/v2/droplets")
-            .query(&[("tag_name", TAG_NAME)])
-            .send()?
-            .json()?;
+        let droplets_response = client.list_droplets(TAG_NAME)?;
 
         let count = droplets_response.droplets.len();
         if count == EXPECTED_COUNT {
@@ -54,7 +48,6 @@ impl Create {
         } else {
             for i in 1..=EXPECTED_COUNT {
                 info!("Creating droplet #{}", i);
-                let client = DigitalOcean::new()?;
 
                 let body = CreateDropletBody {
                     name: format!("secrets-keeper-{}", i),
@@ -98,33 +91,6 @@ impl Create {
             Ok(())
         }
     }
-}
-
-#[derive(Deserialize, Debug)]
-struct Droplets {
-    droplets: Vec<Droplet>,
-}
-
-// TODO: add volume_ids
-#[derive(Deserialize, Debug)]
-struct Droplet {
-    id: u64,
-    features: Vec<String>,
-    name: String,
-    status: String,
-    networks: Networks,
-}
-
-#[derive(Deserialize, Debug)]
-struct Networks {
-    v4: Vec<V4Network>,
-}
-
-#[derive(Deserialize, Debug)]
-struct V4Network {
-    ip_address: String,
-    netmask: String,
-    gateway: String,
 }
 
 // TODO: include
