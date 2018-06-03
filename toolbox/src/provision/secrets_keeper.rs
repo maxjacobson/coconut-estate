@@ -1,7 +1,5 @@
-use digital_ocean::Client as DigitalOcean;
+use digital_ocean::{Client as DigitalOcean, CreateDropletBody};
 use failure::Error;
-use psst_helper as psst;
-use reqwest;
 
 static TAG_NAME: &'static str = "secrets-keeper";
 static EXPECTED_COUNT: usize = 1; // Who needs more than one?
@@ -15,27 +13,12 @@ struct UnexpectedlyTooManyDroplets {
     count: usize,
 }
 
-#[derive(Fail, Debug)]
-#[fail(display = "Could not create droplet because {:?}", reason)]
-struct CouldNotCreateDroplet {
-    reason: UnhappyCreateDropletResponse,
-}
-
 pub struct Create;
 
 impl Create {
     pub fn run() -> Result<(), Error> {
         debug!("Creating a secrets keeper droplet");
-        let digital_ocean_api_key = psst::get("digital_ocean_key")?;
-
-        let mut headers = reqwest::header::Headers::new();
-        headers.set(reqwest::header::Authorization(reqwest::header::Bearer {
-            token: digital_ocean_api_key.to_string(),
-        }));
-        headers.set(reqwest::header::ContentType::json());
-
         let client = DigitalOcean::new()?;
-        let deprecated_client = reqwest::Client::builder().default_headers(headers).build()?;
 
         let droplets_response = client.list_droplets(TAG_NAME)?;
 
@@ -61,77 +44,9 @@ impl Create {
                         .collect(),
                 };
 
-                let mut create_droplet_response = deprecated_client
-                    .post("https://api.digitalocean.com/v2/droplets")
-                    .json(&body)
-                    .send()?;
-
-                let status = create_droplet_response.status();
-                match status {
-                    reqwest::StatusCode::Accepted => {
-                        let parsed_create_droplet_response: Result<
-                            CreateDropletResponse,
-                            reqwest::Error,
-                        > = create_droplet_response.json();
-
-                        // TODO: attach a volume, tags, create DNS record, etc...
-
-                        info!("{:#?}", parsed_create_droplet_response);
-                    }
-                    _ => {
-                        let unhappy_create_droplet_response: UnhappyCreateDropletResponse =
-                            create_droplet_response.json()?;
-
-                        Err(CouldNotCreateDroplet {
-                            reason: unhappy_create_droplet_response,
-                        })?
-                    }
-                }
+                client.create_droplet(&body)?;
             }
             Ok(())
         }
     }
-}
-
-// TODO: include
-//  - backups
-//  - private_networking
-//  - user_data
-//  - monitoring
-//  - volumes
-//  - tags
-#[derive(Debug, Serialize)]
-struct CreateDropletBody {
-    name: String,
-    region: String,
-    size: String,
-    image: String,
-    ssh_keys: Vec<u64>,
-}
-
-#[derive(Debug, Deserialize)]
-struct CreateDropletResponse {
-    droplet: CreatedDroplet,
-}
-
-#[derive(Debug, Deserialize)]
-struct CreatedDroplet {
-    id: u64,
-    name: String,
-    memory: u64,
-    vcpus: u64,
-    disk: u64,
-    locked: bool,
-    created_at: String,
-    status: String,
-    backup_ids: Vec<u64>,
-    snapshot_ids: Vec<u64>,
-    features: Vec<String>,
-    tags: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct UnhappyCreateDropletResponse {
-    id: String,
-    message: String,
 }

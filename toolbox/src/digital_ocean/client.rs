@@ -7,7 +7,7 @@ use reqwest::{self, StatusCode};
 struct UnexpectedStatusCode {
     status: StatusCode,
     action: String,
-    details: UnhappyCreateDropletResponse,
+    details: UnhappyApiResponse,
 }
 
 pub struct Client {
@@ -29,6 +29,29 @@ impl Client {
         })
     }
 
+    pub fn create_droplet(&self, body: &CreateDropletBody) -> Result<(), Error> {
+        let mut response = self.http
+            .post("https://api.digitalocean.com/v2/droplets")
+            .json(body)
+            .send()?;
+
+        let status = response.status();
+        if status == StatusCode::Accepted {
+            // TODO: attach a volume, tags, create DNS record, etc...
+            let created_droplet: CreateDropletResponse = response.json()?;
+            info!("{:#?}", created_droplet);
+        } else {
+            let details: UnhappyApiResponse = response.json()?;
+            Err(UnexpectedStatusCode {
+                action: "Creating a droplet".to_string(),
+                status: status,
+                details: details,
+            })?
+        }
+
+        Ok(())
+    }
+
     pub fn list_droplets(&self, tag_name: &str) -> Result<Droplets, Error> {
         let mut response = self.http
             .get("https://api.digitalocean.com/v2/droplets")
@@ -40,7 +63,7 @@ impl Client {
             let droplets: Droplets = response.json()?;
             Ok(droplets)
         } else {
-            let details: UnhappyCreateDropletResponse = response.json()?;
+            let details: UnhappyApiResponse = response.json()?;
             Err(UnexpectedStatusCode {
                 action: "Listing droplets".to_string(),
                 status: status,
@@ -69,7 +92,7 @@ impl Client {
             debug!("Created key {:?}", name);
             Ok(created_key.ssh_key)
         } else {
-            let details: UnhappyCreateDropletResponse = response.json()?;
+            let details: UnhappyApiResponse = response.json()?;
             Err(UnexpectedStatusCode {
                 action: "Fetch SSH keys from Digital Ocean".to_string(),
                 status: status,
@@ -92,7 +115,7 @@ impl Client {
         if status == StatusCode::NoContent {
             Ok(())
         } else {
-            let details: UnhappyCreateDropletResponse = response.json()?;
+            let details: UnhappyApiResponse = response.json()?;
             Err(UnexpectedStatusCode {
                 action: "Delete SSH key from Digital Ocean".to_string(),
                 status: status,
@@ -122,7 +145,7 @@ impl Client {
                     break;
                 }
             } else {
-                let details: UnhappyCreateDropletResponse = response.json()?;
+                let details: UnhappyApiResponse = response.json()?;
                 Err(UnexpectedStatusCode {
                     action: "Fetch SSH keys from Digital Ocean".to_string(),
                     status: status,
@@ -158,12 +181,6 @@ struct Links {
 struct Pages {
     last: String,
     next: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct UnhappyCreateDropletResponse {
-    id: String,
-    message: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -203,4 +220,47 @@ struct V4Network {
     ip_address: String,
     netmask: String,
     gateway: String,
+}
+
+// TODO: include
+//  - backups
+//  - private_networking
+//  - user_data
+//  - monitoring
+//  - volumes
+//  - tags
+#[derive(Debug, Serialize)]
+pub struct CreateDropletBody {
+    pub name: String,
+    pub region: String,
+    pub size: String,
+    pub image: String,
+    pub ssh_keys: Vec<u64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UnhappyApiResponse {
+    id: String,
+    message: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct CreateDropletResponse {
+    droplet: CreatedDroplet,
+}
+
+#[derive(Debug, Deserialize)]
+struct CreatedDroplet {
+    id: u64,
+    name: String,
+    memory: u64,
+    vcpus: u64,
+    disk: u64,
+    locked: bool,
+    created_at: String,
+    status: String,
+    backup_ids: Vec<u64>,
+    snapshot_ids: Vec<u64>,
+    features: Vec<String>,
+    tags: Vec<String>,
 }
