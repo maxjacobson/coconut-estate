@@ -1,4 +1,7 @@
 // This bin is just meant to serve as an example of how you might use this as a library
+//
+// Usage:
+// bin/authorized-keys-generator --usernames username1 username2 username3
 extern crate authorized_keys_generator;
 use authorized_keys_generator::Generator;
 

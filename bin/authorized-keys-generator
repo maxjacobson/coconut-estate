@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# This is just meant to demonstrate how to use the authorized_keys_generator
+# library in a program.
+set -e
+
+RUST_LOG="reqwest=debug,authorized_keys_generator=debug" \
+  bin/helpers/run-package authorized_keys_generator "$@"
