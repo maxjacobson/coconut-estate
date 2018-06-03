@@ -4,9 +4,9 @@ version = "0.0.1"
 publish = false
 
 [dependencies]
-clap = "~2.31.2"
-env_logger = "0.5.9"
-log = "0.4.1"
-failure = "0.1.1"
-failure_derive = "0.1.1"
-reqwest = "0.8.5"
+clap = "~2.31"
+env_logger = "~0.5"
+log = "~0.4"
+failure = "~0.1"
+failure_derive = "~0.1"
+reqwest = "~0.8"
