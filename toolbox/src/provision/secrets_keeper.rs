@@ -1,4 +1,5 @@
 // TODO: use the new DO client struct... it was inspired by this
+use digital_ocean::Client as DigitalOcean;
 use failure::Error;
 use psst_helper as psst;
 use reqwest;
@@ -34,11 +35,11 @@ impl Create {
         }));
         headers.set(reqwest::header::ContentType::json());
 
-        let client = reqwest::Client::builder().default_headers(headers).build()?;
+        let deprecated_client = reqwest::Client::builder().default_headers(headers).build()?;
 
         // TODO: check the status to avoid inscrutable errors trying to parse an error response as
         // a happy response
-        let droplets_response: Droplets = client
+        let droplets_response: Droplets = deprecated_client
             .get("https://api.digitalocean.com/v2/droplets")
             .query(&[("tag_name", TAG_NAME)])
             .send()?
@@ -53,15 +54,21 @@ impl Create {
         } else {
             for i in 1..=EXPECTED_COUNT {
                 info!("Creating droplet #{}", i);
+                let client = DigitalOcean::new()?;
 
                 let body = CreateDropletBody {
                     name: format!("secrets-keeper-{}", i),
                     region: DEFAULT_REGION.to_string(),
                     size: DEFAULT_SIZE.to_string(),
                     image: DEFAULT_IMAGE.to_string(),
+                    ssh_keys: client
+                        .list_ssh_keys()?
+                        .iter()
+                        .map(|ssh_key| ssh_key.id)
+                        .collect(),
                 };
 
-                let mut create_droplet_response = client
+                let mut create_droplet_response = deprecated_client
                     .post("https://api.digitalocean.com/v2/droplets")
                     .json(&body)
                     .send()?;
@@ -79,7 +86,8 @@ impl Create {
                         info!("{:#?}", parsed_create_droplet_response);
                     }
                     _ => {
-                        let unhappy_create_droplet_response: UnhappyCreateDropletResponse = create_droplet_response.json()?;
+                        let unhappy_create_droplet_response: UnhappyCreateDropletResponse =
+                            create_droplet_response.json()?;
 
                         Err(CouldNotCreateDroplet {
                             reason: unhappy_create_droplet_response,
@@ -120,7 +128,6 @@ struct V4Network {
 }
 
 // TODO: include
-//  - ssh keys
 //  - backups
 //  - private_networking
 //  - user_data
@@ -133,6 +140,7 @@ struct CreateDropletBody {
     region: String,
     size: String,
     image: String,
+    ssh_keys: Vec<u64>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -123,7 +123,7 @@ struct SshKeys {
 
 #[derive(Debug, Deserialize)]
 pub struct SshKey {
-    id: u64,
+    pub id: u64,
     fingerprint: String,
     pub public_key: String,
     name: String,
