@@ -30,14 +30,23 @@ impl Client {
     }
 
     pub fn list_droplets(&self, tag_name: &str) -> Result<Droplets, Error> {
-        // TODO: check the status to avoid inscrutable errors trying to parse an error response as
-        // a happy response
-        let droplets_response: Droplets = self.http
+        let mut response = self.http
             .get("https://api.digitalocean.com/v2/droplets")
             .query(&[("tag_name", tag_name)])
-            .send()?
-            .json()?;
-        Ok(droplets_response)
+            .send()?;
+
+        let status = response.status();
+        if status == StatusCode::Ok {
+            let droplets: Droplets = response.json()?;
+            Ok(droplets)
+        } else {
+            let details: UnhappyCreateDropletResponse = response.json()?;
+            Err(UnexpectedStatusCode {
+                action: "Listing droplets".to_string(),
+                status: status,
+                details: details,
+            })?
+        }
     }
 
     pub fn create_ssh_key(&self, name: &str, public_key: &str) -> Result<SshKey, Error> {
