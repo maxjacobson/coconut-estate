@@ -17,7 +17,7 @@ fn main() {
         .arg(
             Arg::with_name("usernames")
                 .short("u")
-                .long("username")
+                .long("usernames")
                 .multiple(true)
                 .takes_value(true)
                 .required(true),
