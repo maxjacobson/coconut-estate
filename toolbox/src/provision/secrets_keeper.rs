@@ -1,3 +1,4 @@
+// TODO: use the new DO client struct... it was inspired by this
 use failure::Error;
 use psst_helper as psst;
 use reqwest;
@@ -35,6 +36,8 @@ impl Create {
 
         let client = reqwest::Client::builder().default_headers(headers).build()?;
 
+        // TODO: check the status to avoid inscrutable errors trying to parse an error response as
+        // a happy response
         let droplets_response: Droplets = client
             .get("https://api.digitalocean.com/v2/droplets")
             .query(&[("tag_name", TAG_NAME)])

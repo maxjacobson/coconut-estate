@@ -109,7 +109,8 @@ fn read_secret(
 fn main() {
     let matches = ClapApp::new("Secrets keeper")
         .about("A web service for reading and writing secrets")
-        .setting(AppSettings::SubcommandRequired)
+        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .setting(AppSettings::VersionlessSubcommands)
         .version(crate_version!())
         .subcommand(
             SubCommand::with_name("run")

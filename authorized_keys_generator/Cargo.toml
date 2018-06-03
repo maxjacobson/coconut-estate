@@ -1,16 +1,12 @@
 [package]
-name = "toolbox"
+name = "authorized_keys_generator"
 version = "0.0.1"
 publish = false
 
 [dependencies]
-authorized_keys_generator = { path = "../authorized_keys_generator" }
 clap = "~2.31.2"
 env_logger = "0.5.9"
 log = "0.4.1"
 failure = "0.1.1"
 failure_derive = "0.1.1"
-psst = { path = "../psst" }
 reqwest = "0.8.5"
-serde = "1.0"
-serde_derive = "1.0"

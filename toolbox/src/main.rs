@@ -16,8 +16,12 @@ extern crate reqwest;
 #[macro_use]
 extern crate serde_derive;
 
+extern crate authorized_keys_generator;
+
+mod authorized_keys;
 mod clap_helpers;
 mod cli;
+mod digital_ocean;
 mod droplet_kinds;
 mod environments;
 mod provision;
