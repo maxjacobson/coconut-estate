@@ -37,7 +37,6 @@ impl Client {
 
         let status = response.status();
         if status == StatusCode::Accepted {
-            // TODO: attach a volume, tags, create DNS record, etc...
             let created_droplet: CreateDropletResponse = response.json()?;
             info!("{:#?}", created_droplet);
         } else {
@@ -66,6 +65,27 @@ impl Client {
             let details: UnhappyApiResponse = response.json()?;
             Err(UnexpectedStatusCode {
                 action: "Listing droplets".to_string(),
+                status: status,
+                details: details,
+            })?
+        }
+    }
+
+    pub fn create_volume(&self, body: &CreateVolumeBody) -> Result<CreatedVolume, Error> {
+        let mut response = self.http
+            .post("https://api.digitalocean.com/v2/volumes")
+            .json(body)
+            .send()?;
+
+        let status = response.status();
+
+        if status == StatusCode::Created {
+            let created_volume = response.json()?;
+            Ok(created_volume)
+        } else {
+            let details: UnhappyApiResponse = response.json()?;
+            Err(UnexpectedStatusCode {
+                action: "Create a volume on Digital Ocean".to_string(),
                 status: status,
                 details: details,
             })?
@@ -237,6 +257,7 @@ pub struct CreateDropletBody {
     pub image: String,
     pub ssh_keys: Vec<u64>,
     pub tags: Option<Vec<String>>,
+    pub volumes: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -262,6 +283,29 @@ struct CreatedDroplet {
     status: String,
     backup_ids: Vec<u64>,
     snapshot_ids: Vec<u64>,
+    volume_ids: Vec<String>,
     features: Vec<String>,
     tags: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CreateVolumeBody {
+    pub size_gigabytes: u64,
+    pub name: String,
+    pub description: Option<String>,
+    pub region: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreatedVolume {
+    pub volume: Volume,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Volume {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub size_gigabytes: u64,
+    pub created_at: String,
 }

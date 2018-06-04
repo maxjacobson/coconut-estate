@@ -1,4 +1,4 @@
-use digital_ocean::{Client as DigitalOcean, CreateDropletBody};
+use digital_ocean::{Client as DigitalOcean, CreateDropletBody, CreateVolumeBody};
 use failure::Error;
 
 static TAG_NAME: &'static str = "secrets-keeper";
@@ -32,6 +32,16 @@ impl Create {
             for i in 1..=EXPECTED_COUNT {
                 info!("Creating droplet #{}", i);
 
+                let created_volume = client.create_volume(&CreateVolumeBody {
+                    size_gigabytes: 1,
+                    name: format!("secrets-keeper-{}", i),
+                    description: Some(format!(
+                        "Volume to store secrets on for secrets-keeper-{}",
+                        i
+                    )),
+                    region: DEFAULT_REGION.to_string(),
+                })?;
+
                 let body = CreateDropletBody {
                     name: format!("secrets-keeper-{}", i),
                     region: DEFAULT_REGION.to_string(),
@@ -43,6 +53,7 @@ impl Create {
                         .map(|ssh_key| ssh_key.id)
                         .collect(),
                     tags: Some(vec![TAG_NAME.to_string()]),
+                    volumes: Some(vec![created_volume.volume.id]),
                 };
 
                 client.create_droplet(&body)?;
