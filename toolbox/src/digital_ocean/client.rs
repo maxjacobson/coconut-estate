@@ -236,6 +236,7 @@ pub struct CreateDropletBody {
     pub size: String,
     pub image: String,
     pub ssh_keys: Vec<u64>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]

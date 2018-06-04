@@ -42,6 +42,7 @@ impl Create {
                         .iter()
                         .map(|ssh_key| ssh_key.id)
                         .collect(),
+                    tags: Some(vec![TAG_NAME.to_string()]),
                 };
 
                 client.create_droplet(&body)?;
