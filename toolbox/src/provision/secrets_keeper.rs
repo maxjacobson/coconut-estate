@@ -77,6 +77,8 @@ impl Create {
             ssh_authorized_keys: ssh_keys,
         });
 
+        user_data.add_package("htop".to_string());
+        user_data.add_package("jq".to_string());
         user_data.add_package("ncdu".to_string());
         user_data.add_package("tree".to_string());
 
