@@ -245,10 +245,7 @@ struct V4Network {
 // TODO: include
 //  - backups
 //  - private_networking
-//  - user_data
 //  - monitoring
-//  - volumes
-//  - tags
 #[derive(Debug, Serialize)]
 pub struct CreateDropletBody {
     pub name: String,
@@ -257,6 +254,7 @@ pub struct CreateDropletBody {
     pub image: String,
     pub ssh_keys: Vec<u64>,
     pub tags: Option<Vec<String>>,
+    pub user_data: Option<String>,
     pub volumes: Option<Vec<String>>,
 }
 
