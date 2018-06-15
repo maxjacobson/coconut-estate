@@ -9,13 +9,17 @@ if [ -z "$package" ]; then
   exit 1
 fi
 
-kernel="$(uname)"
+command -v docker >/dev/null
 
-if [ "$kernel" = "Darwin" ]; then
-  docker run --rm --interactive --tty \
-    --volume "$(PWD):/code" \
-    --workdir /code \
-    rust:1.26.1 cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
-else
-  cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
-fi
+IMAGE_NAME="coconutestate/cargo"
+docker build . --tag $IMAGE_NAME
+docker run --rm --interactive --tty \
+  --volume "$(pwd):/code" \
+  --volume "$(pwd)/.docker-cache/registry:/root/.cargo/registry" \
+  --volume "$(pwd)/.docker-cache/target:/code/target" \
+  --workdir /code \
+  $IMAGE_NAME cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
+
+echo "==> Binary created at:"
+echo ".docker-cache/target/x86_64-unknown-linux-gnu/release/$package"
+sudo chown -R $USER:$USER .docker-cache
