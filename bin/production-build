@@ -22,4 +22,4 @@ docker run --rm --interactive --tty \
 
 echo "==> Binary created at:"
 echo ".docker-cache/target/x86_64-unknown-linux-gnu/release/$package"
-sudo chown -R $USER:$USER .docker-cache
+sudo chown -R $(id -un):$(id -gn) .docker-cache
