@@ -12,7 +12,9 @@ fi
 command -v docker >/dev/null
 
 IMAGE_NAME="coconutestate/cargo"
-docker build . --tag $IMAGE_NAME
+echo "==> Building docker image to help build $package"
+docker build . --tag $IMAGE_NAME --quiet
+echo "==> Building $package in docker"
 docker run --rm --interactive --tty \
   --volume "$(pwd):/code" \
   --volume "$(pwd)/.docker-cache/registry:/root/.cargo/registry" \
@@ -20,6 +22,13 @@ docker run --rm --interactive --tty \
   --workdir /code \
   $IMAGE_NAME cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
 
-echo "==> Binary created at:"
-echo ".docker-cache/target/x86_64-unknown-linux-gnu/release/$package"
+path=".docker-cache/target/x86_64-unknown-linux-gnu/release/$package"
+if [ -f "$path" ]; then
+  echo "==> Binary created at:"
+  echo "$path"
+else
+  echo "Success, but seems like no binary was produced"
+fi
+
+sudo --validate --prompt="==> Please provide password so we can make sure docker doesn't futz with your password: "
 sudo chown -R $(id -un):$(id -gn) .docker-cache
