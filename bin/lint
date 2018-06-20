@@ -4,3 +4,4 @@ set -e
 
 cargo fmt --all -- --write-mode=diff
 cargo check --quiet --all
+npx standard website/**/*.js
