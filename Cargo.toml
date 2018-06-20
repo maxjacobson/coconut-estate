@@ -4,4 +4,5 @@ members = [
   "psst",
   "secrets_keeper",
   "toolbox",
+  "website",
 ]

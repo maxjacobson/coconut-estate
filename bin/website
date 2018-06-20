@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# N.B.
+# This file is intended for use in your development environment, and not
+# production
+
+set -e
+
+echo "Starting development-mode website"
+RUST_LOG="actix_web=info,website=debug" \
+  bin/helpers/run-package website run --binding localhost:5002
