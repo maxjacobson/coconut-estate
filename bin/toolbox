@@ -6,4 +6,4 @@
 
 set -e
 
-RUST_LOG="psst=debug,toolbox=debug,reqwest=debug,serde=debug" bin/helpers/run-package toolbox "$@"
+RUST_LOG="toolbox=debug,reqwest=debug,serde=debug" bin/helpers/run-package toolbox "$@"

@@ -1,8 +1,6 @@
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 use failure::Error;
 
-use authorized_keys;
-use provision;
 use secrets;
 
 #[derive(Fail, Debug)]
@@ -22,22 +20,6 @@ impl App {
             .setting(AppSettings::SubcommandRequiredElseHelp)
             .setting(AppSettings::VersionlessSubcommands)
             .version(crate_version!())
-            .subcommand(
-                SubCommand::with_name("authorized_keys")
-                    .about("Sync SSH public keys from GitHub to Digital Ocean"),
-            )
-            .subcommand(
-                SubCommand::with_name("provision")
-                    .about("Provision a new droplet")
-                    .arg(
-                        Arg::with_name("kind")
-                            .help("The kind of droplet to provision")
-                            .value_name("KIND")
-                            .required(true)
-                            .index(1)
-                            .possible_values(&["secrets_keeper"]),
-                    ),
-            )
             .subcommand(
                 SubCommand::with_name("secrets")
                     .about("Interact with the secrets keeper service")
@@ -112,10 +94,6 @@ impl App {
 
         if let Some(matches) = matches.subcommand_matches("secrets") {
             secrets::App::lookup(matches)?.run()
-        } else if let Some(matches) = matches.subcommand_matches("provision") {
-            provision::App::new(matches)?.run()
-        } else if let Some(_matches) = matches.subcommand_matches("authorized_keys") {
-            authorized_keys::App::new().run()
         } else {
             Err(UnimplementedValidInputError)?
         }
