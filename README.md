@@ -4,6 +4,7 @@
 
 * Install Rust 1.26+ <https://rustup.rs/>
 * Install Terraform
+* Install npm
 
 ## Building for production
 
