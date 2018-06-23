@@ -3,6 +3,7 @@
 ## setting up your dev environment
 
 * Install Rust 1.26+ <https://rustup.rs/>
+* Install Terraform
 
 ## Building for production
 
@@ -38,3 +39,8 @@ This is somewhat hypothetical, but I think the idea is:
 
 [git-commmit-messages]: :https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [merge bubbles]: https://stackoverflow.com/a/26239382
+
+## Production
+
+We're hosted on DigitalOcean and using Terraform to describe our infrastructure and create resources.
+See terraform/README.md for details on using Terraform.

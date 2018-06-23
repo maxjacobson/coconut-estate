@@ -1,2 +1,5 @@
 target
 .docker-cache
+terraform/prod/.terraform
+terraform/**/*.tfvars
+terraform/**/*.tfstate*

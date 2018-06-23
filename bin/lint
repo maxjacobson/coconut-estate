@@ -5,3 +5,4 @@ set -e
 cargo fmt --all -- --write-mode=diff
 cargo check --quiet --all
 bin/helpers/standard
+terraform fmt -write=false -check=true -list=true -diff=true
