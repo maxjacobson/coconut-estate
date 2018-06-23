@@ -3,3 +3,4 @@
 set -e
 
 cargo fmt --all
+bin/helpers/standard --fix
