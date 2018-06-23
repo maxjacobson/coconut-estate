@@ -13,6 +13,8 @@ apt-get autoremove --yes
 
 useradd coconut --create-home --shell /bin/bash --comment "Main user for service"
 usermod -aG sudo coconut
+echo "coconut ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/100-coconut
+
 mkdir -p /home/coconut/.ssh
 cp ~/.ssh/authorized_keys /home/coconut/.ssh/authorized_keys
 chown coconut:coconut /home/coconut/.ssh/authorized_keys
