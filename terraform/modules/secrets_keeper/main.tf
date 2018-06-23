@@ -26,6 +26,6 @@ resource "digitalocean_droplet" "web" {
   volume_ids = ["${digitalocean_volume.disk.id}"]
 
   provisioner "remote-exec" {
-    script = "${path.module}/prepare-droplet.sh"
+    script = "${path.module}/prepare-droplet.bash"
   }
 }
