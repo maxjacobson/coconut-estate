@@ -30,5 +30,5 @@ else
   echo "Success, but seems like no binary was produced"
 fi
 
-sudo --validate --prompt="==> Please provide password so we can make sure docker doesn't futz with your password: "
+sudo --validate --prompt="==> Please provide password so we can make sure docker doesn't futz with your permissions: "
 sudo chown -R $(id -un):$(id -gn) .docker-cache
