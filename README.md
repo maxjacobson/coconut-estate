@@ -27,7 +27,12 @@ This is somewhat hypothetical, but I think the idea is:
 
 ## Style guide
 
-- For Rust code: run `rustfmt`
+Please run `bin/lint` before committing (consider running it as part of a before-commit hook).
+Running `bin/delint` will fix most issues surfaced there.
+
+- For Rust code: follow `rustfmt` (in bin/lint)
+- For Terraform code, follow `terraform fmt` (in bin/lint)
+- For JavaScript code, follow standard JS (in bin/lint)
 - For Markdown: don't hard-wrap text at any particular column.
   Instead, do one line per sentence.
   It feels and looks weird at first and then it's _omg so nice_ to not have to rewrap paragraphs when tweaking stuff you wrote before.
