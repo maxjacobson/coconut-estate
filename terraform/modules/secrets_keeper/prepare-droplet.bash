@@ -30,3 +30,9 @@ mkdir -p /mnt/secrets-keeper
 mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_secrets-keeper /mnt/secrets-keeper
 echo /dev/disk/by-id/scsi-0DO_Volume_secrets-keeper /mnt/secrets-keeper ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
 chown coconut:coconut /mnt/secrets-keeper
+
+cp /root/secrets-keeper-dummy.bash /home/coconut/secrets-keeper
+chmod 700 /home/coconut/secrets-keeper
+chown coconut:coconut /home/coconut/secrets-keeper
+systemctl enable secrets-keeper.service
+systemctl start secrets-keeper.service

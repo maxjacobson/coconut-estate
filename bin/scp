@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+# Usage:
+# bin/scp README.md secrets.coconutestate.top:~
+
+exec scp -F "$(dirname "$0")"/helpers/ssh_config "$@"

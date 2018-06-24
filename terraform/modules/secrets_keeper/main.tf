@@ -28,12 +28,33 @@ resource "digitalocean_droplet" "web" {
   tags       = ["${var.tags}"]
   volume_ids = ["${digitalocean_volume.disk.id}"]
 
+  provisioner "file" {
+    source      = "${path.module}/secrets-keeper-dummy.bash"
+    destination = "/root/secrets-keeper-dummy.bash"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "bastion.${var.host}"
+      bastion_user = "coconut"
+    }
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/secrets-keeper.service"
+    destination = "/etc/systemd/system/secrets-keeper.service"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "bastion.${var.host}"
+      bastion_user = "coconut"
+    }
+  }
+
   provisioner "remote-exec" {
     script = "${path.module}/prepare-droplet.bash"
 
     connection {
-      type = "ssh"
-
+      type         = "ssh"
       bastion_host = "bastion.${var.host}"
       bastion_user = "coconut"
     }
@@ -46,7 +67,7 @@ resource "digitalocean_droplet" "web" {
 }
 
 resource "digitalocean_firewall" "web" {
-  name = "secrets-keeper-ssh"
+  name = "secrets-keeper"
 
   # the droplets to apply the rule to
   tags = ["${var.tags}"]
