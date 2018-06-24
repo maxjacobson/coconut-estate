@@ -25,6 +25,7 @@ module "secrets_keeper" {
   source = "../modules/secrets_keeper"
 
   allow_inbound_tag = "${module.tags.bastion_name}"
+  bastion_host      = "${module.bastion.host}"
   host              = "${var.host}"
   region            = "${var.region}"
   ssh_keys          = ["${module.ssh_keys.all}"]

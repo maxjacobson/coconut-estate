@@ -8,8 +8,10 @@ echo "Preparing bastion droplet"
 
 apt-get update
 apt-get upgrade --yes
-apt-get install --yes htop jq ncdu tree
+apt-get update
+apt-get install --yes htop jq ncdu tree silversearcher-ag
 apt-get autoremove --yes
+curl -sSL https://agent.digitalocean.com/install.sh | sh
 
 useradd coconut --create-home --shell /bin/bash --comment "Main user for service"
 usermod -aG sudo coconut

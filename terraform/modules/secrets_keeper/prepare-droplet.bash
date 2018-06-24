@@ -8,8 +8,10 @@ echo "Preparing secrets keeper droplet"
 
 apt-get update
 apt-get upgrade --yes
-apt-get install --yes htop jq ncdu tree
+apt-get update
+apt-get install --yes htop jq ncdu tree silversearcher-ag
 apt-get autoremove --yes
+curl -sSL https://agent.digitalocean.com/install.sh | sh
 
 useradd coconut --create-home --shell /bin/bash --comment "Main user for service"
 usermod -aG sudo coconut
@@ -29,10 +31,16 @@ fi
 mkdir -p /mnt/secrets-keeper
 mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_secrets-keeper /mnt/secrets-keeper
 echo /dev/disk/by-id/scsi-0DO_Volume_secrets-keeper /mnt/secrets-keeper ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
-chown coconut:coconut /mnt/secrets-keeper
+mkdir -p /mnt/secrets-keeper/secrets
+chown -R coconut:coconut /mnt/secrets-keeper
 
-cp /root/secrets-keeper-dummy.bash /home/coconut/secrets-keeper
-chmod 700 /home/coconut/secrets-keeper
-chown coconut:coconut /home/coconut/secrets-keeper
+# Seed the service with a dummy command to run
+application_binary_path="/mnt/secrets-keeper/secrets-keeper"
+if [ ! -f "$application_binary_path" ]; then
+  cp /root/secrets-keeper-dummy.bash "$application_binary_path"
+  chmod 700 "$application_binary_path"
+  chown coconut:coconut "$application_binary_path"
+fi
+
 systemctl enable secrets-keeper.service
 systemctl start secrets-keeper.service

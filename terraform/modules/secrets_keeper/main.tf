@@ -1,3 +1,4 @@
+variable "bastion_host" {}
 variable "host" {}
 variable "region" {}
 
@@ -20,13 +21,14 @@ resource "digitalocean_volume" "disk" {
 
 # Server to run the secrets keeper web service on
 resource "digitalocean_droplet" "web" {
-  image      = "ubuntu-16-04-x64"
-  name       = "secrets-keeper"
-  region     = "${var.region}"
-  size       = "512mb"
-  ssh_keys   = ["${var.ssh_keys}"]
-  tags       = ["${var.tags}"]
-  volume_ids = ["${digitalocean_volume.disk.id}"]
+  image              = "ubuntu-16-04-x64"
+  name               = "secrets-keeper"
+  private_networking = true
+  region             = "${var.region}"
+  size               = "512mb"
+  ssh_keys           = ["${var.ssh_keys}"]
+  tags               = ["${var.tags}"]
+  volume_ids         = ["${digitalocean_volume.disk.id}"]
 
   provisioner "file" {
     source      = "${path.module}/secrets-keeper-dummy.bash"
@@ -34,7 +36,7 @@ resource "digitalocean_droplet" "web" {
 
     connection {
       type         = "ssh"
-      bastion_host = "bastion.${var.host}"
+      bastion_host = "${var.bastion_host}"
       bastion_user = "coconut"
     }
   }
@@ -45,7 +47,7 @@ resource "digitalocean_droplet" "web" {
 
     connection {
       type         = "ssh"
-      bastion_host = "bastion.${var.host}"
+      bastion_host = "${var.bastion_host}"
       bastion_user = "coconut"
     }
   }
@@ -87,18 +89,22 @@ resource "digitalocean_firewall" "web" {
 
   outbound_rule = [
     {
-      protocol              = "icmp"
+      protocol = "icmp"
+
       destination_addresses = ["0.0.0.0/0", "::/0"]
+      port_range            = "1-65535"
     },
     {
-      protocol              = "tcp"
-      port_range            = "1-65535"
+      protocol = "tcp"
+
       destination_addresses = ["0.0.0.0/0", "::/0"]
+      port_range            = "1-65535"
     },
     {
-      protocol              = "udp"
-      port_range            = "1-65535"
+      protocol = "udp"
+
       destination_addresses = ["0.0.0.0/0", "::/0"]
+      port_range            = "1-65535"
     },
   ]
 }
