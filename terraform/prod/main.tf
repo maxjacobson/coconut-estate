@@ -1,5 +1,9 @@
 variable "do_token" {}
 
+variable "host" {
+  default = "coconutestate.top"
+}
+
 variable "region" {
   default = "nyc1"
 }
@@ -20,14 +24,17 @@ module "tags" {
 module "secrets_keeper" {
   source = "../modules/secrets_keeper"
 
-  region   = "${var.region}"
-  ssh_keys = ["${module.ssh_keys.all}"]
-  tags     = ["${module.tags.secrets_keeper_id}"]
+  allow_inbound_tag = "${module.tags.bastion_name}"
+  host              = "${var.host}"
+  region            = "${var.region}"
+  ssh_keys          = ["${module.ssh_keys.all}"]
+  tags              = ["${module.tags.secrets_keeper_id}"]
 }
 
 module "bastion" {
   source = "../modules/bastion"
 
+  host     = "${var.host}"
   region   = "${var.region}"
   ssh_keys = ["${module.ssh_keys.all}"]
   tags     = ["${module.tags.bastion_id}"]

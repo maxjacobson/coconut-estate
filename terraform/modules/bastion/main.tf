@@ -1,5 +1,7 @@
 variable "region" {}
 
+variable "host" {}
+
 variable "ssh_keys" {
   type = "list"
 }
@@ -20,4 +22,14 @@ resource "digitalocean_droplet" "bastion" {
   provisioner "remote-exec" {
     script = "${path.module}/prepare-droplet.bash"
   }
+}
+
+resource "digitalocean_floating_ip" "bastion" {
+  droplet_id = "${digitalocean_droplet.bastion.id}"
+  region     = "${digitalocean_droplet.bastion.region}"
+}
+
+resource "digitalocean_domain" "bastion" {
+  name       = "bastion.${var.host}"
+  ip_address = "${digitalocean_floating_ip.bastion.ip_address}"
 }

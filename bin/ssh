@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+# Usage:
+# bin/ssh bastion
+# bin/ssh secrets.coconutestate.top
+# bin/ssh coconut@secrets.coconutestate.top
+
+exec ssh -F "$(dirname "$0")"/helpers/ssh_config "$@"

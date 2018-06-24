@@ -1,0 +1,14 @@
+Host bastion
+    Port                   22
+    HostName               bastion.coconutestate.top
+    ProxyCommand           none
+    PasswordAuthentication no
+    ForwardAgent           yes
+
+Host *
+    User                   coconut
+    ProxyCommand           ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -q -p 22 coconut@bastion.coconutestate.top nc %h 22
+    StrictHostKeyChecking  no
+    UserKnownHostsFile     /dev/null
+    UseRoaming             no
+    ServerAliveInterval    60
