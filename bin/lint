@@ -2,7 +2,13 @@
 
 set -e
 
-cargo fmt --all -- --write-mode=diff
-cargo check --quiet --all
-bin/helpers/standard
-terraform fmt -write=false -check=true -list=true -diff=true
+function say_and_do() {
+  printf "==> [$(date)] %s\n" "$*"
+  "$@"
+}
+
+say_and_do cargo fmt --all -- --write-mode=diff
+say_and_do cargo check --quiet --all
+say_and_do bin/helpers/standard
+say_and_do terraform fmt -write=false -check=true -list=true -diff=true
+say_and_do echo "all done"
