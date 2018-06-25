@@ -12,6 +12,7 @@ bin/scp -r website/assets \
 bin/ssh www.coconutestate.top sudo systemctl stop website.service
 bin/ssh www.coconutestate.top mv /mnt/website/website /mnt/website/website-old
 bin/ssh www.coconutestate.top mv /mnt/website/website-new /mnt/website/website
+bin/ssh www.coconutestate.top rm -rf /home/coconut/website/assets-old
 bin/ssh www.coconutestate.top mv /home/coconut/website/assets /home/coconut/website/assets-old
 bin/ssh www.coconutestate.top mv /home/coconut/website/assets-new /home/coconut/website/assets
 bin/ssh www.coconutestate.top sudo systemctl restart website.service
