@@ -9,7 +9,7 @@ echo "Preparing secrets keeper droplet"
 apt-get update
 apt-get upgrade --yes
 apt-get update
-apt-get install --yes htop jq ncdu tree silversearcher-ag
+apt-get install --yes htop jq ncdu tree silversearcher-ag nginx
 apt-get autoremove --yes
 curl -sSL https://agent.digitalocean.com/install.sh | sh
 
@@ -44,3 +44,7 @@ fi
 
 systemctl enable secrets-keeper.service
 systemctl start secrets-keeper.service
+
+cp /root/nginx.conf /etc/nginx/nginx.conf
+nginx -t # validate configuration file
+systemctl reload nginx

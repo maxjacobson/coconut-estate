@@ -12,6 +12,10 @@ variable "tags" {
 
 variable "allow_inbound_tag" {}
 
+locals {
+  domain_name = "secrets.${var.host}"
+}
+
 resource "digitalocean_volume" "disk" {
   description = "A persistent volume to store secrets on"
   name        = "secrets-keeper"
@@ -33,6 +37,17 @@ resource "digitalocean_droplet" "web" {
   provisioner "file" {
     source      = "${path.module}/secrets-keeper-dummy.bash"
     destination = "/root/secrets-keeper-dummy.bash"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "${var.bastion_host}"
+      bastion_user = "coconut"
+    }
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.nginx.rendered}"
+    destination = "/root/nginx.conf"
 
     connection {
       type         = "ssh"
@@ -82,7 +97,7 @@ resource "digitalocean_firewall" "web" {
     },
     {
       protocol    = "tcp"
-      port_range  = "443"
+      port_range  = "80"
       source_tags = ["${var.allow_inbound_tag}"]
     },
   ]
@@ -115,6 +130,14 @@ resource "digitalocean_floating_ip" "secrets_keeper" {
 }
 
 resource "digitalocean_domain" "secrets_keeper" {
-  name       = "secrets.${var.host}"
+  name       = "${local.domain_name}"
   ip_address = "${digitalocean_floating_ip.secrets_keeper.ip_address}"
+}
+
+data "template_file" "nginx" {
+  template = "${file("${path.module}/nginx.conf.tpl")}"
+
+  vars {
+    server_name = "${local.domain_name}"
+  }
 }

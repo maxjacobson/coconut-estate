@@ -13,6 +13,10 @@ provider "digitalocean" {
   version = "~> 0.1"
 }
 
+provider "template" {
+  version = "~> 1.0"
+}
+
 module "ssh_keys" {
   source = "../modules/ssh_keys"
 }
