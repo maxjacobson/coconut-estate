@@ -1,0 +1,14 @@
+[Unit]
+Description=Website
+After=network.target
+
+[Service]
+Type=simple
+User=coconut
+WorkingDirectory=/home/coconut
+Environment=RUST_LOG=actix_web=info,website=debug
+ExecStart=/mnt/website/website run --binding 0.0.0.0:8080
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

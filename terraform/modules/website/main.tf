@@ -12,30 +12,29 @@ variable "tags" {
 }
 
 locals {
-  domain_name = "secrets.${var.host}"
+  domain_name = "www.${var.host}"
 }
 
 resource "digitalocean_volume" "disk" {
-  description = "A persistent volume to store secrets on"
-  name        = "secrets-keeper"
+  description = "A persistent volume to store stuff on"
+  name        = "website"
   region      = "${var.region}"
   size        = "1"
 }
 
-# Server to run the secrets keeper web service on
-resource "digitalocean_droplet" "web" {
+resource "digitalocean_droplet" "website" {
   image              = "ubuntu-16-04-x64"
-  name               = "secrets-keeper"
+  name               = "website"
   private_networking = true
   region             = "${var.region}"
-  size               = "512mb"
+  size               = "s-3vcpu-1gb"
   ssh_keys           = ["${var.ssh_keys}"]
   tags               = ["${var.tags}"]
   volume_ids         = ["${digitalocean_volume.disk.id}"]
 
   provisioner "file" {
-    source      = "${path.module}/secrets-keeper-dummy.bash"
-    destination = "/root/secrets-keeper-dummy.bash"
+    source      = "${path.module}/website-dummy.bash"
+    destination = "/root/website-dummy.bash"
 
     connection {
       type         = "ssh"
@@ -56,8 +55,8 @@ resource "digitalocean_droplet" "web" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/secrets-keeper.service"
-    destination = "/etc/systemd/system/secrets-keeper.service"
+    source      = "${path.module}/website.service"
+    destination = "/etc/systemd/system/website.service"
 
     connection {
       type         = "ssh"
@@ -79,11 +78,21 @@ resource "digitalocean_droplet" "web" {
   # because the prepare script won't be able to run unless the firewall permits
   # outbound access, and we don't want this thing to come online before the
   # firewall is protecting it
-  depends_on = ["digitalocean_firewall.web"]
+  depends_on = ["digitalocean_firewall.website"]
 }
 
-resource "digitalocean_firewall" "web" {
-  name = "secrets-keeper"
+resource "digitalocean_floating_ip" "website" {
+  droplet_id = "${digitalocean_droplet.website.id}"
+  region     = "${digitalocean_droplet.website.region}"
+}
+
+resource "digitalocean_domain" "website" {
+  name       = "${local.domain_name}"
+  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+}
+
+resource "digitalocean_firewall" "website" {
+  name = "website"
 
   # the droplets to apply the rule to
   tags = ["${var.tags}"]
@@ -95,9 +104,14 @@ resource "digitalocean_firewall" "web" {
       source_tags = ["${var.allow_inbound_tag}"]
     },
     {
-      protocol    = "tcp"
-      port_range  = "80"
-      source_tags = ["${var.allow_inbound_tag}"]
+      protocol         = "tcp"
+      port_range       = "80"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "tcp"
+      port_range       = "443"
+      source_addresses = ["0.0.0.0/0", "::/0"]
     },
   ]
 
@@ -121,16 +135,6 @@ resource "digitalocean_firewall" "web" {
       port_range            = "1-65535"
     },
   ]
-}
-
-resource "digitalocean_floating_ip" "secrets_keeper" {
-  droplet_id = "${digitalocean_droplet.web.id}"
-  region     = "${digitalocean_droplet.web.region}"
-}
-
-resource "digitalocean_domain" "secrets_keeper" {
-  name       = "${local.domain_name}"
-  ip_address = "${digitalocean_floating_ip.secrets_keeper.ip_address}"
 }
 
 data "template_file" "nginx" {

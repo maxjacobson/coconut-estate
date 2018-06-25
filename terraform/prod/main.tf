@@ -44,3 +44,14 @@ module "bastion" {
   ssh_keys = ["${module.ssh_keys.all}"]
   tags     = ["${module.tags.bastion_id}"]
 }
+
+module "website" {
+  source = "../modules/website"
+
+  allow_inbound_tag = "${module.tags.bastion_name}"
+  bastion_host      = "${module.bastion.host}"
+  host              = "${var.host}"
+  region            = "${var.region}"
+  ssh_keys          = ["${module.ssh_keys.all}"]
+  tags              = ["${module.tags.website_id}"]
+}
