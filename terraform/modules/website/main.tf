@@ -11,10 +11,6 @@ variable "tags" {
   type = "list"
 }
 
-locals {
-  domain_name = "www.${var.host}"
-}
-
 resource "digitalocean_volume" "disk" {
   description = "A persistent volume to store stuff on"
   name        = "website"
@@ -87,7 +83,12 @@ resource "digitalocean_floating_ip" "website" {
 }
 
 resource "digitalocean_domain" "website" {
-  name       = "${local.domain_name}"
+  name       = "www.${var.host}"
+  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+}
+
+resource "digitalocean_domain" "website_bare_domain" {
+  name       = "${var.host}"
   ip_address = "${digitalocean_floating_ip.website.ip_address}"
 }
 
@@ -141,6 +142,6 @@ data "template_file" "nginx" {
   template = "${file("${path.module}/nginx.conf.tpl")}"
 
   vars {
-    server_name = "${local.domain_name}"
+    server_name = "${var.host}"
   }
 }
