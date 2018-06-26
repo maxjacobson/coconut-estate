@@ -6,10 +6,11 @@ set -ex
 
 echo "Preparing website droplet"
 
+sudo add-apt-repository --yes ppa:certbot/certbot
 apt-get update
 apt-get upgrade --yes
 apt-get update
-apt-get install --yes htop jq ncdu tree silversearcher-ag nginx
+apt-get install --yes htop jq ncdu tree silversearcher-ag python-certbot-nginx
 apt-get autoremove --yes
 curl -sSL https://agent.digitalocean.com/install.sh | sh
 
@@ -47,6 +48,6 @@ chown -R coconut:coconut /home/coconut/website
 systemctl enable website.service
 systemctl start website.service
 
-cp /root/nginx.conf /etc/nginx/nginx.conf
-nginx -t # validate configuration file
-systemctl reload nginx
+chmod +x /root/generate-ssl-cert.bash
+
+echo "all done"

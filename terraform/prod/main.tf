@@ -4,6 +4,10 @@ variable "host" {
   default = "coconutestate.top"
 }
 
+variable "ops_email" {
+  default = "max@hardscrabble.net"
+}
+
 variable "region" {
   default = "nyc1"
 }
@@ -51,6 +55,7 @@ module "website" {
   allow_inbound_tag = "${module.tags.bastion_name}"
   bastion_host      = "${module.bastion.host}"
   host              = "${var.host}"
+  ops_email         = "${var.ops_email}"
   region            = "${var.region}"
   ssh_keys          = ["${module.ssh_keys.all}"]
   tags              = ["${module.tags.website_id}"]

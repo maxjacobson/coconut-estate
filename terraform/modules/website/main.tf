@@ -1,6 +1,7 @@
 variable "allow_inbound_tag" {}
 variable "bastion_host" {}
 variable "host" {}
+variable "ops_email" {}
 variable "region" {}
 
 variable "ssh_keys" {
@@ -61,6 +62,17 @@ resource "digitalocean_droplet" "website" {
     }
   }
 
+  provisioner "file" {
+    content     = "${data.template_file.generate_ssl_cert_script.rendered}"
+    destination = "/root/generate-ssl-cert.bash"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "${var.bastion_host}"
+      bastion_user = "coconut"
+    }
+  }
+
   provisioner "remote-exec" {
     script = "${path.module}/prepare-droplet.bash"
 
@@ -85,6 +97,20 @@ resource "digitalocean_floating_ip" "website" {
 resource "digitalocean_domain" "website" {
   name       = "www.${var.host}"
   ip_address = "${digitalocean_floating_ip.website.ip_address}"
+
+  # Just to make sure both domains are created before running the provisioner...
+  depends_on = ["digitalocean_domain.website_bare_domain"]
+
+  provisioner "remote-exec" {
+    inline = ["/root/generate-ssl-cert.bash"]
+
+    connection {
+      host         = "${var.host}"
+      type         = "ssh"
+      bastion_host = "bastion.${var.host}"
+      bastion_user = "coconut"
+    }
+  }
 }
 
 resource "digitalocean_domain" "website_bare_domain" {
@@ -143,5 +169,15 @@ data "template_file" "nginx" {
 
   vars {
     server_name = "${var.host}"
+  }
+}
+
+data "template_file" "generate_ssl_cert_script" {
+  template = "${file("${path.module}/generate-ssl-cert.bash.tpl")}"
+
+  vars {
+    ops_email   = "${var.ops_email}"
+    bare_domain = "${var.host}"
+    www_domain  = "www.${var.host}"
   }
 }
