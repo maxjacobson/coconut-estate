@@ -6,13 +6,13 @@ set -ex
 # any of these steps can fail
 bin/production-build website
 bin/scp .docker-cache/target/x86_64-unknown-linux-gnu/release/website \
-  www.coconutestate.top:/mnt/website/website-new
+  www.coconutestate.top:/mnt/website/binary/website-new
 bin/scp -r website/assets \
-  www.coconutestate.top:~/website/assets-new
+  www.coconutestate.top:/mnt/website/website/assets-new
 bin/ssh www.coconutestate.top sudo systemctl stop website.service
-bin/ssh www.coconutestate.top mv /mnt/website/website /mnt/website/website-old
-bin/ssh www.coconutestate.top mv /mnt/website/website-new /mnt/website/website
-bin/ssh www.coconutestate.top rm -rf /home/coconut/website/assets-old
-bin/ssh www.coconutestate.top mv /home/coconut/website/assets /home/coconut/website/assets-old
-bin/ssh www.coconutestate.top mv /home/coconut/website/assets-new /home/coconut/website/assets
+bin/ssh www.coconutestate.top mv /mnt/website/binary/website /mnt/website/binary/website-old
+bin/ssh www.coconutestate.top mv /mnt/website/binary/website-new /mnt/website/binary/website
+bin/ssh www.coconutestate.top rm -rf /mnt/website/website/assets-old
+bin/ssh www.coconutestate.top mv /mnt/website/website/assets /mnt/website/website/assets-old
+bin/ssh www.coconutestate.top mv /mnt/website/website/assets-new /mnt/website/website/assets
 bin/ssh www.coconutestate.top sudo systemctl restart website.service

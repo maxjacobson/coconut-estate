@@ -5,9 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=coconut
-WorkingDirectory=/home/coconut
+WorkingDirectory=/mnt/website
 Environment=RUST_LOG=actix_web=info,website=debug
-ExecStart=/mnt/website/website run --binding 0.0.0.0:8080
+ExecStart=/mnt/website/binary/website run --binding 0.0.0.0:8080
 Restart=on-failure
 
 [Install]
