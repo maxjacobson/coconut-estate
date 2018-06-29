@@ -33,7 +33,6 @@ mkdir -p /mnt/website
 mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_website /mnt/website
 echo /dev/disk/by-id/scsi-0DO_Volume_website  /mnt/website ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
 
-mkdir -p /mnt/website/website/assets
 mkdir -p /mnt/website/binary
 chown -R coconut:coconut /mnt/website
 

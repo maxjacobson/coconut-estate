@@ -13,10 +13,26 @@ extern crate log;
 extern crate openssl;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 
+use std::fs::File;
+use std::io::prelude::*;
+
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static! {
+    static ref INDEX: String = {
+        let mut file = File::open("./website/index.html").unwrap();
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).unwrap();
+
+        contents
+    };
+}
+
 fn default_handler(_req: HttpRequest) -> HttpResponse {
     HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
-        .body(include_str!("../root.html"))
+        .body(INDEX.as_bytes())
 }
 
 fn main() {
@@ -85,10 +101,7 @@ fn main() {
                 .default_resource(|r| {
                     r.method(Method::GET).with(default_handler);
                 })
-                .handler(
-                    "/assets/",
-                    fs::StaticFiles::new("./website/assets").index_file("index.html"),
-                )
+                .handler("/assets/", fs::StaticFiles::new("./website/assets"))
         });
 
         if use_ssl {

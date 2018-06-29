@@ -3,5 +3,5 @@
 set -e
 
 cargo fmt --all
-bin/helpers/standard --fix
 terraform fmt -write=true -list=false
+cd website && npm run lint:js -- --fix

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>No!</title>
+  </head>
+
+  <body>
+    <!--
+      Note to folks working on this: you should pretty much never see this.
+
+      (If you don't work on this don't keep reading ;)
+
+      The idea is that in production, the ember app will overwrite this,
+      And in production you won't visit the rust backend directly, but rather
+      Run both the backend (bin/website-backend) and the frontend
+      (bin/website-frontend) and then visit the port for the frontend to work
+      on the site, and the front-end will make requests to the rust back end
+      like an API only
+    -->
+    <p>No!</p>
+  </body>
+</html>

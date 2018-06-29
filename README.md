@@ -32,7 +32,7 @@ Running `bin/delint` will fix most issues surfaced there.
 
 - For Rust code: follow `rustfmt` (in bin/lint)
 - For Terraform code, follow `terraform fmt` (in bin/lint)
-- For JavaScript code, follow standard JS (in bin/lint)
+- For JavaScript, I like Standard and I'd like to return it, but I'm new to ember and for now I'm following their conventions, which is a particular ember-specific eslint configuration (in bin/lint)
 - For Markdown: don't hard-wrap text at any particular column.
   Instead, do one line per sentence.
   It feels and looks weird at first and then it's _omg so nice_ to not have to rewrap paragraphs when tweaking stuff you wrote before.
