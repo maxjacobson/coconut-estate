@@ -13,7 +13,7 @@ extern crate log;
 extern crate openssl;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 
-fn hello_world(_req: HttpRequest) -> HttpResponse {
+fn default_handler(_req: HttpRequest) -> HttpResponse {
     HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
         .body(include_str!("../root.html"))
@@ -82,8 +82,8 @@ fn main() {
         let unbound_server = server::new(move || {
             App::new()
                 .middleware(middleware::Logger::default())
-                .resource("/", |r| {
-                    r.method(Method::GET).with(hello_world);
+                .default_resource(|r| {
+                    r.method(Method::GET).with(default_handler);
                 })
                 .handler(
                     "/assets/",
