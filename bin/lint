@@ -5,13 +5,18 @@ set -e
 function say_and_do() {
   printf "==> [$(date)] %s\n" "$*"
   "$@"
+  return $?
 }
 
 say_and_do cargo fmt --all -- --write-mode=diff
 say_and_do terraform fmt -write=false -check=true -list=true -diff=true
 say_and_do echo "all done"
-say_and_do cd website && npm run lint:js && cd -
+cd website
+say_and_do npm run lint:js
+cd ..
 
 # Non-lints that I nevertheless want to run regularly
 say_and_do cargo check --quiet --all
 say_and_do bin/ember test
+
+echo "All good"
