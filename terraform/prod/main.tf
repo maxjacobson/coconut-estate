@@ -1,3 +1,19 @@
+terraform {
+  # N.B. this is actually a Digital Ocean "space" pretending to be an S3 bucket
+  backend "s3" {
+    bucket   = "coconut-estate-tfstate"      # name of space
+    endpoint = "ams3.digitaloceanspaces.com" # storing in amsterdam
+    key      = "prod/terraform.tfstate"      # file in space to store state
+    region   = "us-east-1"                   # N.B. This is not real
+
+    # Disable a few s3 things
+    skip_requesting_account_id  = true
+    skip_credentials_validation = true
+    skip_get_ec2_platforms      = true
+    skip_metadata_api_check     = true
+  }
+}
+
 variable "do_token" {}
 
 variable "host" {
