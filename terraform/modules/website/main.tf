@@ -52,7 +52,7 @@ resource "digitalocean_droplet" "website" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/api.service"
+    content     = "${data.template_file.api_service.rendered}"
     destination = "/etc/systemd/system/api.service"
 
     connection {
@@ -189,5 +189,13 @@ data "template_file" "generate_ssl_cert_script" {
     api_domain  = "api.${var.host}"
     bare_domain = "${var.host}"
     www_domain  = "www.${var.host}"
+  }
+}
+
+data "template_file" "api_service" {
+  template = "${file("${path.module}/api.service.tpl")}"
+
+  vars {
+    cors = "https://www.${var.host}"
   }
 }

@@ -1,3 +1,24 @@
 <h1>Coconut Estate</h1>
 
-{{outlet}}
+<ul>
+  <li>
+    {{#link-to "roadmaps" class="button"}}
+      Home
+    {{/link-to}}
+  </li>
+  <li>
+    {{#link-to "about" class="button"}}
+      About
+    {{/link-to}}
+  </li>
+
+  <li>
+    {{#link-to "contact" class="button"}}
+      Contact
+    {{/link-to}}
+  </li>
+</ul>
+
+<div class="body">
+  {{outlet}}
+</div>
