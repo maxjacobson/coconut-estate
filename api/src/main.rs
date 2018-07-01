@@ -45,7 +45,7 @@ fn list_roadmaps(_data: HttpRequest) -> Result<Json<RoadmapsResponse>> {
             id: 2,
             kind: "roadmap".to_string(),
             attributes: RoadmapAttributes {
-                title: "Learning French film".to_string(),
+                title: "Learning about French film".to_string(),
             },
         },
     ];
