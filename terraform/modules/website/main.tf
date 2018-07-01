@@ -30,8 +30,8 @@ resource "digitalocean_droplet" "website" {
   volume_ids         = ["${digitalocean_volume.disk.id}"]
 
   provisioner "file" {
-    source      = "${path.module}/website-dummy.bash"
-    destination = "/root/website-dummy.bash"
+    source      = "${path.module}/api-dummy.bash"
+    destination = "/root/api-dummy.bash"
 
     connection {
       type         = "ssh"
@@ -52,8 +52,8 @@ resource "digitalocean_droplet" "website" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/website.service"
-    destination = "/etc/systemd/system/website.service"
+    source      = "${path.module}/api.service"
+    destination = "/etc/systemd/system/api.service"
 
     connection {
       type         = "ssh"
@@ -98,8 +98,11 @@ resource "digitalocean_domain" "website" {
   name       = "www.${var.host}"
   ip_address = "${digitalocean_floating_ip.website.ip_address}"
 
-  # Just to make sure both domains are created before running the provisioner...
-  depends_on = ["digitalocean_domain.website_bare_domain"]
+  # Just to make sure all three domains are created before running the provisioner...
+  depends_on = [
+    "digitalocean_domain.website_bare_domain",
+    "digitalocean_domain.website_api_domain",
+  ]
 
   provisioner "remote-exec" {
     inline = ["/root/generate-ssl-cert.bash"]
@@ -115,6 +118,11 @@ resource "digitalocean_domain" "website" {
 
 resource "digitalocean_domain" "website_bare_domain" {
   name       = "${var.host}"
+  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+}
+
+resource "digitalocean_domain" "website_api_domain" {
+  name       = "api.${var.host}"
   ip_address = "${digitalocean_floating_ip.website.ip_address}"
 }
 
@@ -176,7 +184,9 @@ data "template_file" "generate_ssl_cert_script" {
   template = "${file("${path.module}/generate-ssl-cert.bash.tpl")}"
 
   vars {
-    ops_email   = "${var.ops_email}"
+    ops_email = "${var.ops_email}"
+
+    api_domain  = "api.${var.host}"
     bare_domain = "${var.host}"
     www_domain  = "www.${var.host}"
   }

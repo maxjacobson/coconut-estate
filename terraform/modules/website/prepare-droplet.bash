@@ -37,15 +37,15 @@ mkdir -p /mnt/website/binary
 chown -R coconut:coconut /mnt/website
 
 # Seed the service with a dummy command to run
-application_binary_path="/mnt/website/binary/website"
+application_binary_path="/mnt/website/binary/api"
 if [ ! -f "$application_binary_path" ]; then
-  cp /root/website-dummy.bash "$application_binary_path"
+  cp /root/api-dummy.bash "$application_binary_path"
   chmod 700 "$application_binary_path"
   chown coconut:coconut "$application_binary_path"
 fi
 
-systemctl enable website.service
-systemctl start website.service
+systemctl enable api.service
+systemctl start api.service
 
 chmod +x /root/generate-ssl-cert.bash
 

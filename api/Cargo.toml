@@ -1,5 +1,5 @@
 [package]
-name = "website"
+name = "api"
 version = "0.0.1"
 publish = false
 
@@ -7,7 +7,8 @@ publish = false
 # async web framework
 actix = "~0.5"
 actix-web = { version = "~0.6", features=["alpn"] }
-openssl = "~0.10"
+serde = "~1.0"
+serde_derive = "~1.0"
 
 # CLI interface
 clap = "~2.31"
@@ -15,6 +16,3 @@ clap = "~2.31"
 # logging
 env_logger = "~0.5"
 log = "~0.4"
-
-# misc
-lazy_static = "1.0"

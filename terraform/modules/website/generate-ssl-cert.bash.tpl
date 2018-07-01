@@ -20,4 +20,12 @@ certbot --nginx \
   -n \
   --config-dir /mnt/website/letsencrypt
 
+certbot --nginx \
+  -d ${api_domain} \
+  -m ${ops_email} \
+  --agree-tos \
+  --redirect \
+  -n \
+  --config-dir /mnt/website/letsencrypt
+
 echo "all done"

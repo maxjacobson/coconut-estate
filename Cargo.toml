@@ -1,8 +1,8 @@
 [workspace]
 members = [
+  "api",
   "authorized_keys_generator",
   "psst",
   "secrets_keeper",
   "toolbox",
-  "website",
 ]

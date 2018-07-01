@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# N.B.
+# This file is intended for use in your development environment, and not
+# production
+
+set -e
+
+echo "Starting development-mode api"
+RUST_LOG="actix_web=info,api=debug" \
+  bin/helpers/run-package api run --binding localhost:5002
