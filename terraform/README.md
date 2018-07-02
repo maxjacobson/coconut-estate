@@ -12,7 +12,7 @@ do_token = "1234"
 
 On that same page, create a spaces access key & secret key pair.
 
-Create a `terraform/prod/secret-backend-config.tvars` file which looks like:
+Create a `terraform/prod/secret-backend-config.tfvars` file which looks like:
 
 ```text
 access_key = "1234"
