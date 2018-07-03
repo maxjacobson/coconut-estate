@@ -6,24 +6,9 @@
 * Install Terraform
 * Install npm
 
-## Building for production
+## Deploying to production
 
-This is somewhat hypothetical, but I think the idea is:
-
-* Make sure you've got `rustup` installed and the right toolchain/target installed:
-
-  ```shell
-  rustup target add --toolchain stable x86_64-unknown-linux-gnu
-  ```
-
-* Cross-compile the binary for a linux server on production:
-
-  ```shell
-  bin/production-build secrets_keeper
-
-  # find the binary here:
-  find target/x86_64-unknown-linux-gnu/release -name "*secrets_keeper"
-  ```
+See the various `bin/deploy-*` scripts.
 
 ## Style guide
 
@@ -49,4 +34,4 @@ Running `bin/delint` will fix most issues surfaced there.
 ## Production
 
 We're hosted on DigitalOcean and using Terraform to describe our infrastructure and create resources.
-See terraform/README.md for details on using Terraform.
+See [terraform/README.md](terraform/README.md) for details on using Terraform.
