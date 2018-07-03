@@ -1,24 +1,29 @@
-<h1>Coconut Estate</h1>
-
-<ul>
-  <li>
-    {{#link-to "roadmaps" class="button"}}
-      Home
-    {{/link-to}}
-  </li>
-  <li>
-    {{#link-to "about" class="button"}}
-      About
-    {{/link-to}}
-  </li>
-
-  <li>
-    {{#link-to "contact" class="button"}}
-      Contact
-    {{/link-to}}
-  </li>
-</ul>
-
 <div class="body">
-  {{outlet}}
+  <header>
+    <h1>
+      {{#link-to "roadmaps"}}
+        coconut estate
+      {{/link-to}}
+    </h1>
+  </header>
+
+  <div class="page">
+    {{outlet}}
+  </div>
+
+  <footer>
+    <ul>
+      <li>
+        {{#link-to "about" class="button"}}
+          about
+        {{/link-to}}
+      </li>
+
+      <li>
+        {{#link-to "contact" class="button"}}
+          contact
+        {{/link-to}}
+      </li>
+    </ul>
+  </footer>
 </div>
