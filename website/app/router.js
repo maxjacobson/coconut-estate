@@ -10,6 +10,8 @@ Router.map(function() {
   this.route('about');
   this.route('contact');
   this.route('roadmaps');
+
+  this.route('404', { path: '/*path' });
 });
 
 export default Router;
