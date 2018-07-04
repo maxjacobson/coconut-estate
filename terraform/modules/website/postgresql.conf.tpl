@@ -1,0 +1,23 @@
+data_directory = '/mnt/database/postgres/data_dir'
+
+hba_file = '/etc/postgresql/9.5/main/pg_hba.conf'	# host-based authentication file
+ident_file = '/etc/postgresql/9.5/main/pg_ident.conf'	# ident configuration file
+external_pid_file = '/var/run/postgresql/9.5-main.pid'			# write an extra PID file
+port = 5432				# (change requires restart)
+max_connections = 100			# (change requires restart)
+unix_socket_directories = '/var/run/postgresql'	# comma-separated list of directories
+ssl = true				# (change requires restart)
+ssl_cert_file = '/mnt/database/postgres/fullchain.pem'
+ssl_key_file = '/mnt/database/postgres/privkey.pem'
+shared_buffers = 128MB
+dynamic_shared_memory_type = posix
+log_line_prefix = '%t [%p-%l] %q%u@%d '
+log_timezone = 'UTC'
+stats_temp_directory = '/var/run/postgresql/9.5-main.pg_stat_tmp'
+datestyle = 'iso, mdy'
+timezone = 'UTC'
+lc_messages = 'en_US.UTF-8'			# locale for system error message
+lc_monetary = 'en_US.UTF-8'			# locale for monetary formatting
+lc_numeric = 'en_US.UTF-8'			# locale for number formatting
+lc_time = 'en_US.UTF-8'				# locale for time formatting
+default_text_search_config = 'pg_catalog.english'

@@ -28,4 +28,21 @@ certbot --nginx \
   -n \
   --config-dir /mnt/website/letsencrypt
 
+systemctl stop nginx
+certbot certonly --standalone \
+  -d ${database_domain} \
+  -m ${ops_email} \
+  --agree-tos \
+  -n \
+  --config-dir /mnt/database/letsencrypt
+systemctl start nginx
+
+cp /mnt/database/letsencrypt/live/${database_domain}/privkey.pem /mnt/database/postgres/
+cp /mnt/database/letsencrypt/live/${database_domain}/fullchain.pem /mnt/database/postgres
+chown -R postgres:postgres /mnt/database/postgres
+chmod 0600 /mnt/database/postgres/privkey.pem
+
+systemctl enable postgresql@9.5-main
+systemctl restart postgresql@9.5-main
+
 echo "all done"

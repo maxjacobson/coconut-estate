@@ -10,7 +10,8 @@ sudo add-apt-repository --yes ppa:certbot/certbot
 apt-get update
 apt-get upgrade --yes
 apt-get update
-apt-get install --yes htop jq ncdu tree silversearcher-ag python-certbot-nginx
+apt-get install --yes htop jq ncdu tree silversearcher-ag python-certbot-nginx \
+  postgresql postgresql-contrib
 apt-get autoremove --yes
 curl -sSL https://agent.digitalocean.com/install.sh | sh
 
@@ -28,13 +29,25 @@ if ! blkid /dev/disk/by-id/scsi-0DO_Volume_website | grep --quiet ext4; then
   mkfs.ext4 -F /dev/disk/by-id/scsi-0DO_Volume_website
 fi
 
-# Mount the volume
+# Mount the website volume
 mkdir -p /mnt/website
 mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_website /mnt/website
 echo /dev/disk/by-id/scsi-0DO_Volume_website  /mnt/website ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
 
 mkdir -p /mnt/website/binary
 chown -R coconut:coconut /mnt/website
+
+if ! blkid /dev/disk/by-id/scsi-0DO_Volume_database | grep --quiet ext4; then
+  # format the disk (danger!)
+  mkfs.ext4 -F /dev/disk/by-id/scsi-0DO_Volume_database
+fi
+
+# Mount the database volume
+mkdir -p /mnt/database
+mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_database /mnt/database
+echo /dev/disk/by-id/scsi-0DO_Volume_database  /mnt/database ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
+
+chown -R coconut:coconut /mnt/database
 
 # Seed the service with a dummy command to run
 application_binary_path="/mnt/website/binary/api"
@@ -46,6 +59,15 @@ fi
 
 systemctl enable api.service
 systemctl start api.service
+
+cp /root/postgresql.conf /etc/postgresql/9.5/main/postgresql.conf
+
+pg_data_dir="/mnt/database/postgres/data_dir"
+if [ ! -d "$pg_data_dir" ]; then
+  mkdir -p /mnt/database/postgres
+  chown -R postgres:postgres /mnt/database/postgres
+  sudo -u postgres /usr/lib/postgresql/9.5/bin/initdb -D "$pg_data_dir"
+fi
 
 chmod +x /root/generate-ssl-cert.bash
 

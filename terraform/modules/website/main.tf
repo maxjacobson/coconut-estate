@@ -1,4 +1,5 @@
-variable "allow_inbound_tag" {}
+variable "allow_inbound_ssh_tag" {}
+variable "allow_inbound_database_tag" {}
 variable "bastion_host" {}
 variable "host" {}
 variable "ops_email" {}
@@ -19,6 +20,13 @@ resource "digitalocean_volume" "disk" {
   size        = "1"
 }
 
+resource "digitalocean_volume" "database_disk" {
+  description = "A persistent volume to store the database's data on"
+  name        = "database"
+  region      = "${var.region}"
+  size        = "20"
+}
+
 resource "digitalocean_droplet" "website" {
   image              = "ubuntu-16-04-x64"
   name               = "website"
@@ -27,7 +35,11 @@ resource "digitalocean_droplet" "website" {
   size               = "s-3vcpu-1gb"
   ssh_keys           = ["${var.ssh_keys}"]
   tags               = ["${var.tags}"]
-  volume_ids         = ["${digitalocean_volume.disk.id}"]
+
+  volume_ids = [
+    "${digitalocean_volume.disk.id}",
+    "${digitalocean_volume.database_disk.id}",
+  ]
 
   provisioner "file" {
     source      = "${path.module}/api-dummy.bash"
@@ -73,6 +85,17 @@ resource "digitalocean_droplet" "website" {
     }
   }
 
+  provisioner "file" {
+    content     = "${data.template_file.postgresql_config.rendered}"
+    destination = "/root/postgresql.conf"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "${var.bastion_host}"
+      bastion_user = "coconut"
+    }
+  }
+
   provisioner "remote-exec" {
     script = "${path.module}/prepare-droplet.bash"
 
@@ -102,6 +125,7 @@ resource "digitalocean_domain" "website" {
   depends_on = [
     "digitalocean_domain.website_bare_domain",
     "digitalocean_domain.website_api_domain",
+    "digitalocean_domain.database_domain",
   ]
 
   provisioner "remote-exec" {
@@ -126,17 +150,22 @@ resource "digitalocean_domain" "website_api_domain" {
   ip_address = "${digitalocean_floating_ip.website.ip_address}"
 }
 
+resource "digitalocean_domain" "database_domain" {
+  name       = "db.${var.host}"
+  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+}
+
 resource "digitalocean_firewall" "website" {
   name = "website"
 
   # the droplets to apply the rule to
-  tags = ["${var.tags}"]
+  tags = ["${sort(var.tags)}"]
 
   inbound_rule = [
     {
       protocol    = "tcp"
       port_range  = "22"
-      source_tags = ["${var.allow_inbound_tag}"]
+      source_tags = ["${var.allow_inbound_ssh_tag}"]
     },
     {
       protocol         = "tcp"
@@ -147,6 +176,11 @@ resource "digitalocean_firewall" "website" {
       protocol         = "tcp"
       port_range       = "443"
       source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol    = "tcp"
+      port_range  = "5432"
+      source_tags = ["${var.allow_inbound_database_tag}"]
     },
   ]
 
@@ -186,9 +220,10 @@ data "template_file" "generate_ssl_cert_script" {
   vars {
     ops_email = "${var.ops_email}"
 
-    api_domain  = "api.${var.host}"
-    bare_domain = "${var.host}"
-    www_domain  = "www.${var.host}"
+    api_domain      = "api.${var.host}"
+    bare_domain     = "${var.host}"
+    database_domain = "db.${var.host}"
+    www_domain      = "www.${var.host}"
   }
 }
 
@@ -198,4 +233,11 @@ data "template_file" "api_service" {
   vars {
     cors = "https://www.${var.host}"
   }
+}
+
+data "template_file" "postgresql_config" {
+  template = "${file("${path.module}/postgresql.conf.tpl")}"
+
+  # None currently - could stop using a template
+  vars {}
 }

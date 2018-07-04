@@ -68,11 +68,17 @@ module "bastion" {
 module "website" {
   source = "../modules/website"
 
-  allow_inbound_tag = "${module.tags.bastion_name}"
-  bastion_host      = "${module.bastion.host}"
-  host              = "${var.host}"
-  ops_email         = "${var.ops_email}"
-  region            = "${var.region}"
-  ssh_keys          = ["${module.ssh_keys.all}"]
-  tags              = ["${module.tags.website_id}"]
+  allow_inbound_ssh_tag      = "${module.tags.bastion_name}"
+  allow_inbound_database_tag = "${module.tags.api_name}"
+  bastion_host               = "${module.bastion.host}"
+  host                       = "${var.host}"
+  ops_email                  = "${var.ops_email}"
+  region                     = "${var.region}"
+  ssh_keys                   = ["${module.ssh_keys.all}"]
+
+  tags = [
+    "${module.tags.website_id}",
+    "${module.tags.api_id}",
+    "${module.tags.database_id}",
+  ]
 }
