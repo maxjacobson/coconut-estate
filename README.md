@@ -10,6 +10,14 @@
 
 See the various `bin/deploy-*` scripts.
 
+## Interacting with the production database
+
+* Fill in `prod.env` (see `prod.env.example`)
+* To generate a new migration: `diesel migration generate create_roadmaps`
+* Fill in the generated files
+* Start an SSH tunnel so the diesel CLI on your system can access production: `bin/database-start-tunnel`
+* To apply the change in production: `bin/diesel_prod migration run`
+
 ## Style guide
 
 Please run `bin/lint` before committing (consider running it as part of a before-commit hook).

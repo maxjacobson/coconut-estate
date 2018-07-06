@@ -1,4 +1,5 @@
 target
 .docker-cache
+prod.env
 terraform/prod/.terraform
 terraform/**/*.tfvars

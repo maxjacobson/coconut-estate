@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# this assumes that SSH tunneling is enabled, see bin/database-start-tunnel
+
+set -eu
+
+source prod.env
+bin/helpers/install_diesel_cli
+url="postgres://$PG_USER:$PG_PASSWORD@localhost:5004/coconut_prod"
+diesel --database-url "$url" "$@"
