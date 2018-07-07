@@ -7,4 +7,8 @@
 set -eu
 
 command -v foreman > /dev/null || gem install foreman
-foreman start --procfile=bin/helpers/Procfile
+foreman start \
+  --procfile=bin/helpers/Procfile \
+  --root=. \
+  --timeout=25 \
+  --timestamp

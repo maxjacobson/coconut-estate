@@ -1,3 +1,3 @@
-database: cd ../../ && bin/database
-api: cd ../../ && bin/api
-website: cd ../../ && bin/website
+database: bin/database
+api: bin/api
+website: bin/website
