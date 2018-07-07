@@ -5,18 +5,35 @@
 * Install Rust 1.26+ <https://rustup.rs/>
 * Install Terraform
 * Install npm
+* Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
 
 ## Deploying to production
 
 See the various `bin/deploy-*` scripts.
 
-## Interacting with the production database
+## Interacting with the database
 
-* Fill in `prod.env` (see `prod.env.example`)
+### Some initial setup:
+
+* Create and fill in `dev.env` (see `dev.env.example`)
+* Create and fill in `prod.env` (see `prod.env.example`)
+
+### Migrating the schema
+
 * To generate a new migration: `diesel migration generate create_roadmaps`
-* Fill in the generated files
-* Start an SSH tunnel so the diesel CLI on your system can access production: `bin/database-start-tunnel`
-* To apply the change in production: `bin/diesel_prod migration run`
+* Fill in the generated `up.sql` and `down.sql` files
+* To apply the change in development: `bin/diesel_dev migration run`
+* To apply the change in production:
+  * Start an SSH tunnel so the diesel CLI on your system can access production: `bin/database-start-tunnel`
+  * `bin/diesel_prod migration run`
+
+### Opening an interactive database shell
+
+* In development:
+  * Make sure the database is running (`bin/database` or `bin/development-environment`)
+  * `bin/psql_dev`
+* In production:
+  * `bin/psql_prod`
 
 ## Style guide
 
@@ -36,7 +53,7 @@ Running `bin/delint` will fix most issues surfaced there.
   - please avoid [merge bubbles]
   - please name the default branch of all repositories "edge"
 
-[git-commmit-messages]: :https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+[git-commmit-messages]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [merge bubbles]: https://stackoverflow.com/a/26239382
 
 ## Production
