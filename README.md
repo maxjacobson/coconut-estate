@@ -53,7 +53,7 @@ Running `bin/delint` will fix most issues surfaced there.
   - please avoid [merge bubbles]
   - please name the default branch of all repositories "edge"
 
-[git-commmit-messages]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+[git-commit-messages]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [merge bubbles]: https://stackoverflow.com/a/26239382
 
 ## Production
