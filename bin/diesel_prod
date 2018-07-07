@@ -4,7 +4,7 @@
 
 set -eu
 
-source prod.env
+source ./prod.env
 bin/helpers/install_diesel_cli
-url="postgres://$PG_USER:$PG_PASSWORD@localhost:5004/coconut_prod"
+url="postgres://$PG_USER:$PG_PASSWORD@localhost:5004/$PG_DATABASE"
 diesel --database-url "$url" "$@"

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# N.B.
+# This file is intended for use in your development environment, and not
+# production
+
+set -eu
+
+command -v foreman > /dev/null || gem install foreman
+foreman start --procfile=bin/helpers/Procfile

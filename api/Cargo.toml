@@ -13,6 +13,10 @@ serde_derive = "~1.0"
 # CLI interface
 clap = "~2.31"
 
+# Database ORM
+chrono = { version = "~0.4", features = ["serde"] }
+diesel = { version = "1.0.0", features = ["postgres", "chrono"] }
+
 # logging
 env_logger = "~0.5"
 log = "~0.4"

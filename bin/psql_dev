@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# N.B.
+# This file is intended for use in your development environment, and not
+# production
+
+set -eu
+
+source ./dev.env
+
+id="$(docker ps --filter name="coconut-dev-database" --format "{{.ID}}")"
+
+if [ -n "$id" ]; then
+  docker exec -it $id psql -U $PG_USER -d $PG_DATABASE
+else
+  echo "Database not running? Try bin/database or bin/development-environment"
+  exit 1
+fi

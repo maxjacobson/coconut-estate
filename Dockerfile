@@ -5,6 +5,7 @@ RUN apt-get update && \
   apt-get install --yes \
   build-essential \
   curl \
+  libpq-dev \
   libssl-dev \
   openssl \
   pkg-config

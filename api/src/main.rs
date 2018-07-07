@@ -1,3 +1,5 @@
+extern crate chrono;
+
 #[macro_use]
 extern crate clap;
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
@@ -14,42 +16,61 @@ extern crate env_logger;
 #[macro_use]
 extern crate log;
 
-#[derive(Serialize)]
-struct RoadmapAttributes {
-    title: String,
-}
+#[macro_use]
+extern crate diesel;
+
+mod models;
+use models::*;
+mod schema;
+
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
+
+use std::env;
 
 #[derive(Serialize)]
-struct Roadmap {
-    id: u64,
-    attributes: RoadmapAttributes,
+struct RoadmapResponse {
+    attributes: Roadmap,
+    id: i32,
     #[serde(rename = "type")]
     kind: String,
 }
 
+impl RoadmapResponse {
+    fn new(roadmap: Roadmap) -> Self {
+        RoadmapResponse {
+            id: roadmap.id,
+            attributes: roadmap,
+            kind: "roadmap".to_string(),
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct RoadmapsResponse {
-    data: Vec<Roadmap>,
+    data: Vec<RoadmapResponse>,
 }
 
 fn list_roadmaps(_data: HttpRequest) -> Result<Json<RoadmapsResponse>> {
-    let roadmaps = vec![
-        Roadmap {
-            id: 1,
-            kind: "roadmap".to_string(),
-            attributes: RoadmapAttributes {
-                title: "Learning Ruby".to_string(),
-            },
-        },
-        Roadmap {
-            id: 2,
-            kind: "roadmap".to_string(),
-            attributes: RoadmapAttributes {
-                title: "Learning about French film".to_string(),
-            },
-        },
-    ];
-    Ok(Json(RoadmapsResponse { data: roadmaps }))
+    // TODO: figure out a way to manage a connection pool rather than establishing a connection on
+    // each request
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let conn = PgConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url));
+
+    let roadmaps_list = {
+        use schema::roadmaps::dsl::*;
+
+        roadmaps.limit(5).load::<Roadmap>(&conn).unwrap()
+    };
+
+    Ok(Json(RoadmapsResponse {
+        data: roadmaps_list
+            .iter()
+            .map(|roadmap| RoadmapResponse::new((*roadmap).clone()))
+            .collect(),
+    }))
 }
 
 fn main() {

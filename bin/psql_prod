@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -eu
+
+source ./prod.env
+bin/ssh -t db.coconutestate.top psql -d $PG_DATABASE
