@@ -48,12 +48,13 @@ module "tags" {
 module "secrets_keeper" {
   source = "../modules/secrets_keeper"
 
-  allow_inbound_tag = "${module.tags.bastion_name}"
-  bastion_host      = "${module.bastion.host}"
-  host              = "${var.host}"
-  region            = "${var.region}"
-  ssh_keys          = ["${module.ssh_keys.all}"]
-  tags              = ["${module.tags.secrets_keeper_id}"]
+  allow_inbound_http_tags = ["${module.tags.api_name}", "${module.tags.bastion_name}"]
+  allow_inbound_ssh_tag   = "${module.tags.bastion_name}"
+  bastion_host            = "${module.bastion.host}"
+  host                    = "${var.host}"
+  region                  = "${var.region}"
+  ssh_keys                = ["${module.ssh_keys.all}"]
+  tags                    = ["${module.tags.secrets_keeper_id}"]
 }
 
 module "bastion" {

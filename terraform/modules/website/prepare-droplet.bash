@@ -57,6 +57,9 @@ if [ ! -f "$application_binary_path" ]; then
   chown coconut:coconut "$application_binary_path"
 fi
 
+cp /root/secrets-fetcher.bash /mnt/website/binary/secrets-fetcher
+chmod +x /mnt/website/binary/secrets-fetcher
+
 systemctl enable api.service
 systemctl start api.service
 

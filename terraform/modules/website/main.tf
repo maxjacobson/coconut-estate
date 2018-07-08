@@ -53,6 +53,17 @@ resource "digitalocean_droplet" "website" {
   }
 
   provisioner "file" {
+    content     = "${data.template_file.secrets_fetcher.rendered}"
+    destination = "/root/secrets-fetcher"
+
+    connection {
+      type         = "ssh"
+      bastion_host = "${var.bastion_host}"
+      bastion_user = "coconut"
+    }
+  }
+
+  provisioner "file" {
     content     = "${data.template_file.nginx.rendered}"
     destination = "/root/nginx.conf"
 
@@ -240,4 +251,12 @@ data "template_file" "postgresql_config" {
 
   # None currently - could stop using a template
   vars {}
+}
+
+data "template_file" "secrets_fetcher" {
+  template = "${file("${path.module}/secrets-fetcher.bash.tpl")}"
+
+  vars {
+    secrets_host = "http://secrets.${var.host}"
+  }
 }

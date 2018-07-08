@@ -1,4 +1,8 @@
-variable "allow_inbound_tag" {}
+variable "allow_inbound_http_tags" {
+  type = "list"
+}
+
+variable "allow_inbound_ssh_tag" {}
 variable "bastion_host" {}
 variable "host" {}
 variable "region" {}
@@ -92,12 +96,12 @@ resource "digitalocean_firewall" "web" {
     {
       protocol    = "tcp"
       port_range  = "22"
-      source_tags = ["${var.allow_inbound_tag}"]
+      source_tags = ["${var.allow_inbound_ssh_tag}"]
     },
     {
       protocol    = "tcp"
       port_range  = "80"
-      source_tags = ["${var.allow_inbound_tag}"]
+      source_tags = ["${var.allow_inbound_http_tags}"]
     },
   ]
 
@@ -123,14 +127,9 @@ resource "digitalocean_firewall" "web" {
   ]
 }
 
-resource "digitalocean_floating_ip" "secrets_keeper" {
-  droplet_id = "${digitalocean_droplet.web.id}"
-  region     = "${digitalocean_droplet.web.region}"
-}
-
 resource "digitalocean_domain" "secrets_keeper" {
   name       = "${local.domain_name}"
-  ip_address = "${digitalocean_floating_ip.secrets_keeper.ip_address}"
+  ip_address = "${digitalocean_droplet.web.ipv4_address_private}"
 }
 
 data "template_file" "nginx" {
