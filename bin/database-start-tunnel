@@ -3,4 +3,4 @@
 # Run this before using bin/diesel_prod
 set -eu
 
-bin/ssh -f -L 5004:localhost:5432 db.coconutestate.top sleep 300
+bin/ssh -f -L 6432:localhost:5432 db.coconutestate.top sleep 300
