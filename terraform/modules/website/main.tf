@@ -54,7 +54,7 @@ resource "digitalocean_droplet" "website" {
 
   provisioner "file" {
     content     = "${data.template_file.secrets_fetcher.rendered}"
-    destination = "/root/secrets-fetcher"
+    destination = "/root/secrets-fetcher.bash"
 
     connection {
       type         = "ssh"
