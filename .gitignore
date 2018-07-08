@@ -1,7 +1,54 @@
-target
-.docker-cache
-dev
+#######################
+#     secrets         #
+#######################
+#
 dev.env
 prod.env
+
+#######################
+#     postgres        #
+#######################
+#
+dev
+
+##########################
+# rust compilation cache #
+##########################
+#
+target
+.docker-cache
+
+########################
+#     terraform        #
+########################
+#
+
 terraform/prod/.terraform
 terraform/**/*.tfvars
+
+########################
+#     website          #
+########################
+#
+
+# compiled output
+/website/dist
+/website/tmp
+
+# dependencies
+/website/node_modules
+/website/bower_components
+
+# misc
+/website/.sass-cache
+/website/connect.lock
+/website/coverage/*
+/website/libpeerconnection.log
+npm-debug.log*
+yarn-error.log
+testem.log
+
+# ember-try
+.node_modules.ember-try/
+bower.json.ember-try
+package.json.ember-try
