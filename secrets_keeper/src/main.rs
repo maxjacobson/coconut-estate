@@ -121,7 +121,7 @@ fn main() {
                         .short("b")
                         .long("binding")
                         .value_name("BINDING")
-                        .help("What to bind the service to (e.g. localhost:5001)")
+                        .help("What to bind the service to (e.g. localhost:5002)")
                         .required(true)
                         .takes_value(true),
                 )
