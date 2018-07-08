@@ -20,9 +20,6 @@ use std::path::Path;
 
 use std::fs::{self, OpenOptions};
 
-extern crate openssl;
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-
 #[derive(Debug)]
 struct AppState {
     location: String,
@@ -136,34 +133,6 @@ fn main() {
                         .help("Path to a directory where secrets ought to be kept")
                         .required(true)
                         .takes_value(true),
-                )
-                .arg(
-                    Arg::with_name("ssl")
-                        .long("ssl")
-                        .help("Pass this flag to opt in to serving the secrets keeper over SSL")
-                        .required(false)
-                        .takes_value(false)
-                        .requires_all(&["private key file", "certificate chain file"]),
-                )
-                .arg(
-                    Arg::with_name("private key file")
-                        .short("k")
-                        .long("key")
-                        .value_name("PATH TO PRIVATE KEY FILE")
-                        .help("The path to the private key file")
-                        .required(false)
-                        .takes_value(true)
-                        .requires_all(&["ssl", "certificate chain file"]),
-                )
-                .arg(
-                    Arg::with_name("certificate chain file")
-                        .short("c")
-                        .long("cert")
-                        .value_name("PATH TO CERTIFICATE CHAIN FILE")
-                        .help("The path to the certificate chain file")
-                        .required(false)
-                        .takes_value(true)
-                        .requires_all(&["private key file", "ssl"]),
                 ),
         )
         .get_matches();
@@ -177,13 +146,12 @@ fn main() {
             .value_of("location")
             .expect("location to be provided (it's required)")
             .to_string();
-        let use_ssl = matches.is_present("ssl");
 
         env_logger::init();
 
         info!("Starting...");
 
-        let unbound_server = server::new(move || {
+        server::new(move || {
             App::with_state(AppState {
                 location: location.clone(),
             }).middleware(middleware::Logger::default())
@@ -191,37 +159,9 @@ fn main() {
                     r.method(Method::POST).with(create_secret);
                     r.method(Method::GET).with(read_secret);
                 })
-        });
-
-        if use_ssl {
-            let path_to_private_key_file = matches
-                .value_of("private key file")
-                .expect("private key file to be present (It's required when ssl is passed")
-                .to_string();
-
-            let path_to_certificate_chain_file = matches
-                .value_of("certificate chain file")
-                .expect("certificate chain file to be present (It's required when ssl is passed")
-                .to_string();
-
-            let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-            builder
-                .set_private_key_file(&path_to_private_key_file, SslFiletype::PEM)
-                .unwrap();
-            builder
-                .set_certificate_chain_file(&path_to_certificate_chain_file)
-                .unwrap();
-
-            unbound_server
-                .bind_ssl(&binding, builder)
-                .expect(&format!("Can not bind to {}", binding))
-                .run();
-        } else {
-            unbound_server
-                .bind(&binding)
-                .expect(&format!("Can not bind to {}", binding))
-                .run();
-        }
+        }).bind(&binding)
+            .expect(&format!("Can not bind to {}", binding))
+            .run();
     } else {
         panic!("whaaaaaaat");
     }
