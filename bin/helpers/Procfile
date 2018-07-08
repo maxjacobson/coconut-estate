@@ -1,3 +1,4 @@
 database: bin/database
 api: bin/api
+secrets: bin/secrets-keeper
 website: bin/website
