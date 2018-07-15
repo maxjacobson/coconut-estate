@@ -19,4 +19,5 @@ docker run --rm  \
   -e PGDATA="$container_pgdata" \
   --volume "$host_pgdata":"$container_pgdata" \
   --publish 5003:5432 \
-  postgres:9.5
+  postgres:9.5 \
+  -c "log_statement=all"
