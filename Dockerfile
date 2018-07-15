@@ -11,5 +11,5 @@ RUN apt-get update && \
   pkg-config
 
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- -y --default-toolchain 1.27.0
+    sh -s -- -y --default-toolchain 1.27.1
 ENV PATH="/root/.cargo/bin:${PATH}"
