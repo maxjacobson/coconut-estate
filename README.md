@@ -63,12 +63,12 @@ I like the number 5, so all of the local things are running on ports that start 
 - `localhost:5000` - website (ember app)
 - `localhost:5001` - api
 - `localhost:5002` - secrets-keeper
-- `localhost:5432` - postgres
+- `localhost:5003` - postgres
 
 When creating SSH tunnels from localhost to a remote production resource, the port will be 1000 more than the development-environment port (just to help remember what it is):
 
 - `localhost:6002` - secrets-keeper
-- `localhost:6432` - postgres
+- `localhost:6003` - postgres
 
 ## Production
 

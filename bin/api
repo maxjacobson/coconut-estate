@@ -9,7 +9,7 @@ set -eu
 echo "Starting development-mode api"
 
 source ./dev.env
-export DATABASE_URL="postgres://$PG_USER:$PG_PASSWORD@localhost:5432/$PG_DATABASE"
+export DATABASE_URL="postgres://$PG_USER:$PG_PASSWORD@localhost:5003/$PG_DATABASE"
 
 RUST_LOG="actix_web=info,api=debug" \
   bin/helpers/run-package api run --binding localhost:5001 --cors http://localhost:5000

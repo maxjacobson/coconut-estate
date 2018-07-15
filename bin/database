@@ -18,5 +18,5 @@ docker run --rm  \
   -e POSTGRES_PASSWORD="$PG_PASSWORD" \
   -e PGDATA="$container_pgdata" \
   --volume "$host_pgdata":"$container_pgdata" \
-  --publish 5432:5432 \
+  --publish 5003:5432 \
   postgres:9.5

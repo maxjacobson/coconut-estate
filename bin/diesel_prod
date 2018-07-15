@@ -6,5 +6,5 @@ set -eu
 
 source ./prod.env
 bin/helpers/install_diesel_cli
-url="postgres://$PG_USER:$PG_PASSWORD@localhost:6432/$PG_DATABASE"
+url="postgres://$PG_USER:$PG_PASSWORD@localhost:6003/$PG_DATABASE"
 diesel --database-url "$url" "$@"
