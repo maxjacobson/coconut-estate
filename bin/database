@@ -12,8 +12,14 @@ mkdir -p "$host_pgdata"
 
 source ./dev.env
 
+id="$(bin/helpers/local_postgres_container_id)"
+
+if [ -n "$id" ]; then
+  docker stop "$id" || docker kill "$id"
+fi
+
 docker run --rm  \
-  --name coconut-dev-database \
+  --name "$PG_CONTAINER_NAME" \
   -e POSTGRES_USER="$PG_USER" \
   -e POSTGRES_PASSWORD="$PG_PASSWORD" \
   -e PGDATA="$container_pgdata" \

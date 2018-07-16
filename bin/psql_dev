@@ -8,7 +8,7 @@ set -eu
 
 source ./dev.env
 
-id="$(docker ps --filter name="coconut-dev-database" --format "{{.ID}}")"
+id="$(bin/helpers/local_postgres_container_id)"
 
 if [ -n "$id" ]; then
   docker exec -it $id psql -U $PG_USER -d $PG_DATABASE
