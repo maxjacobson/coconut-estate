@@ -29,7 +29,7 @@ impl Api {
                             .short("c")
                             .long("cors")
                             .value_name("ORIGIN")
-                            .help("Hosts to allow CORS requests from (e.g. http://localhost:5001)")
+                            .help("Host to allow CORS requests from (e.g. http://localhost:5000, if that's your front-end website)")
                             .required(true)
                             .takes_value(true),
                     ),
