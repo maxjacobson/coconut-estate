@@ -1,28 +1,23 @@
-use actix_web::{HttpRequest, Json, Result};
-use diesel::prelude::*;
-use std::env;
+use actix_web::{HttpResponse, Json};
+use juniper::http::GraphQLRequest;
+use serde_json;
 
-use models::Roadmap;
-use responses::{RoadmapResponse, RoadmapsResponse};
+use graphql_schema::create_schema;
 
-pub fn list_roadmaps(_data: HttpRequest) -> Result<Json<RoadmapsResponse>> {
-    // TODO: figure out a way to manage a connection pool rather than establishing a connection on
-    // each request
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+#[derive(Serialize, Deserialize)]
+pub struct GraphQLData(GraphQLRequest);
 
-    let conn = PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url));
+pub fn respond_to_graphql_request(data: Json<GraphQLData>) -> HttpResponse {
+    // TODO: create the schema outside of the handler so the handler can just _use_ the schema
+    // Just punted to get up and running, but it's totally doable (see
+    // https://github.com/actix/examples/blob/master/juniper/src/main.rs)
 
-    let roadmaps_list = {
-        use database_schema::roadmaps::dsl::*;
+    // TODO 2: this shouldd return a result
 
-        roadmaps.limit(5).load::<Roadmap>(&conn).unwrap()
-    };
+    let schema = create_schema();
+    let res = (data.0).0.execute(&schema, &());
 
-    Ok(Json(RoadmapsResponse {
-        data: roadmaps_list
-            .iter()
-            .map(|roadmap| RoadmapResponse::new((*roadmap).clone()))
-            .collect(),
-    }))
+    let res_text = serde_json::to_string(&res).unwrap();
+
+    res_text.into()
 }

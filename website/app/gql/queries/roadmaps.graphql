@@ -1,0 +1,6 @@
+query {
+  roadmaps {
+    id
+    name
+  }
+}

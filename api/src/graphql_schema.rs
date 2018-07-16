@@ -1,0 +1,66 @@
+use diesel::prelude::*;
+use juniper::FieldResult;
+use juniper::RootNode;
+use std::env;
+
+use models;
+
+#[derive(GraphQLObject)]
+#[graphql(description = "A plan to follow")]
+struct Roadmap {
+    id: i32,
+    name: String,
+}
+
+pub struct QueryRoot;
+
+graphql_object!(QueryRoot: () |&self| {
+    field roadmap(&executor, id: i32) -> FieldResult<Roadmap> {
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let conn = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
+
+        debug!("Looking up roadmap with id {}", id);
+        debug!("Executor context looks like: {:#?}", executor.context());
+
+        let query_id = id;
+
+        let roadmap: models::Roadmap = {
+            use database_schema::roadmaps::dsl::*;
+
+            roadmaps.filter(id.eq(query_id)).first(&conn)?
+        };
+
+
+        Ok(Roadmap{
+            id: roadmap.id,
+            name: roadmap.name,
+        })
+    }
+
+    field roadmaps(&executor) -> FieldResult<Vec<Roadmap>> {
+        // TODO: consider moving as much code as possible out of macros so rustfmt can be more sure
+        // how to reformat it
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let conn = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
+
+        let roadmaps: Vec<models::Roadmap> = {
+            use database_schema::roadmaps::dsl::*;
+
+            roadmaps.load(&conn)?
+        };
+
+        Ok(roadmaps.iter().map(|roadmap| Roadmap { id: roadmap.id, name: roadmap.name.clone() }).collect())
+    }
+});
+
+pub struct MutationRoot;
+
+graphql_object!(MutationRoot: () | &self | {});
+
+pub type Schema = RootNode<'static, QueryRoot, MutationRoot>;
+
+pub fn create_schema() -> Schema {
+    Schema::new(QueryRoot {}, MutationRoot {})
+}

@@ -20,11 +20,12 @@ module.exports = function(environment) {
     APP: {
       // Here you can pass flags/options to your application instance
       // when it is created
-    }
+    },
+    apollo: {}
   };
 
   if (environment === 'development') {
-    ENV.APP.apiHost = 'http://localhost:5001';
+    ENV.apollo.apiURL = 'http://localhost:5001/graphql';
     ENV.APP.LOG_RESOLVER = true;
     ENV.APP.LOG_ACTIVE_GENERATION = true;
     ENV.APP.LOG_TRANSITIONS = true;
@@ -46,7 +47,7 @@ module.exports = function(environment) {
 
   if (environment === 'production') {
     // here you can enable a production-specific feature
-    ENV.APP.apiHost = 'https://api.coconutestate.top';
+    ENV.apollo.apiURL = 'https://api.coconutestate.top/graphql';
   }
 
   return ENV;

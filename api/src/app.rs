@@ -1,6 +1,6 @@
 use actix_web::{http::Method, middleware, middleware::cors::Cors, server, App as ActixWebApp};
 
-use handlers::list_roadmaps;
+use handlers::respond_to_graphql_request;
 
 pub struct App;
 
@@ -12,8 +12,8 @@ impl App {
                 .configure(|app| {
                     Cors::for_app(app)
                         .allowed_origin(&cors_allowed_origin)
-                        .resource("/roadmaps", |r| {
-                            r.method(Method::GET).with(list_roadmaps);
+                        .resource("/graphql", |r| {
+                            r.method(Method::POST).with(respond_to_graphql_request)
                         })
                         .register()
                 })
