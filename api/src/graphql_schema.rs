@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::FieldResult;
 use juniper::RootNode;
@@ -8,8 +9,10 @@ use models;
 #[derive(GraphQLObject)]
 #[graphql(description = "A plan to follow")]
 struct Roadmap {
+    created_at: NaiveDateTime,
     id: i32,
     name: String,
+    updated_at: NaiveDateTime,
 }
 
 pub struct QueryRoot;
@@ -33,8 +36,10 @@ graphql_object!(QueryRoot: () |&self| {
 
 
         Ok(Roadmap{
+            created_at: roadmap.created_at,
             id: roadmap.id,
             name: roadmap.name,
+            updated_at: roadmap.updated_at,
         })
     }
 
@@ -51,7 +56,12 @@ graphql_object!(QueryRoot: () |&self| {
             roadmaps.load(&conn)?
         };
 
-        Ok(roadmaps.iter().map(|roadmap| Roadmap { id: roadmap.id, name: roadmap.name.clone() }).collect())
+        Ok(roadmaps.iter().map(|roadmap| Roadmap {
+            created_at: roadmap.created_at,
+            id: roadmap.id,
+            name: roadmap.name.clone(),
+            updated_at: roadmap.updated_at,
+        }).collect())
     }
 });
 
