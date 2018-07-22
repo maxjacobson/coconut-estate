@@ -1,0 +1,11 @@
+[ci]
+steps = [
+  "cargo fmt --all -- --write-mode=diff",
+  "terraform fmt -write=false -check=true -list=true -diff=true terraform",
+  "bin/lint-js",
+  "cargo check --quiet --all",
+  "bin/ember test",
+]
+
+[github]
+repo = "maxjacobson/coconut-estate"

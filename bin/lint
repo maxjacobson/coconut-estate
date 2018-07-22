@@ -2,14 +2,8 @@
 
 set -ex
 
-cargo fmt --all -- --write-mode=diff
-terraform fmt -write=false -check=true -list=true -diff=true terraform
-cd website
-npm run lint:js
-cd ..
-
-# Non-lints that I nevertheless want to run regularly
-cargo check --quiet --all
-bin/ember test
+# See https://github.com/maxjacobson/cheapskate-ci
+export RUST_LOG="cheapskate_ci=debug"
+cheapskate-ci run
 
 echo "All good"

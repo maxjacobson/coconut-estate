@@ -6,6 +6,7 @@
 * Install Terraform
 * Install npm
 * Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
+* Install [cheapskate-ci](https://github.com/maxjacobson/cheapskate-ci)
 
 ## Deploying to production
 
