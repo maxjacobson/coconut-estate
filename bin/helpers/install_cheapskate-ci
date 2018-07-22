@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+command -v cheapskate-ci > /dev/null || cargo install cheapskate-ci
