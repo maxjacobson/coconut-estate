@@ -15,6 +15,10 @@ footer {
   padding: 0;
 }
 
+footer .active {
+  font-weight: bold;
+}
+
 footer ul {
   list-style-type: none;
   padding: 0;
