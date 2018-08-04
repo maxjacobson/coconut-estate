@@ -6,8 +6,6 @@ group="$1"
 shift
 shift
 
-# secrets_host="http://secrets.coconutestate.top"
-
 json="$(curl --silent --fail "${secrets_host}/secrets?group=$group")"
 
 for line in $(echo "$json" | jq --compact-output '.secrets[]'); do
