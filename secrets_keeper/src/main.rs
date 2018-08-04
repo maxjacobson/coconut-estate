@@ -1,31 +1,26 @@
 #[macro_use]
 extern crate clap;
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
-
-#[macro_use]
-extern crate serde_derive;
-
-extern crate actix_web;
-use actix_web::{
-    http::Method, middleware, server, App, HttpRequest, HttpResponse, Json, Query, Result,
-};
-
 extern crate env_logger;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate serde_derive;
+extern crate warp;
 
 use std::fs::File;
+use std::fs::{self, OpenOptions};
 use std::io::prelude::*;
 use std::path::Path;
+use warp::http::StatusCode;
+use warp::Filter;
 
-use std::fs::{self, OpenOptions};
-
-#[derive(Debug)]
-struct AppState {
-    location: String,
+#[derive(Debug, Clone)]
+struct Location {
+    path: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Secret {
     group: String,
     name: String,
@@ -38,65 +33,40 @@ struct ReadSecretFilters {
     secret: Option<String>,
 }
 
-#[derive(Serialize)]
-struct ReadResponse {
-    secrets: Vec<Secret>,
-}
-
-fn create_secret(data: (HttpRequest<AppState>, Json<Secret>)) -> HttpResponse {
-    let (req, secret) = data;
-    let state: &AppState = req.state();
-
-    let dir = Path::new(&state.location).join(&secret.group);
-    if !Path::exists(&dir) {
-        fs::create_dir_all(&dir).unwrap(); // TODO: add failure
-    }
-    let path = dir.join(&secret.name);
-    if !Path::exists(&path) {
-        File::create(&path).unwrap(); // TODO: add failure
-    }
-    let mut file = OpenOptions::new().write(true).open(&path).unwrap(); // TODO: add failure
-    file.write_all(secret.value.as_bytes()).unwrap(); // TODO: add failure
-
-    HttpResponse::Ok().into()
-}
-
-fn read_secret(
-    data: (HttpRequest<AppState>, Query<ReadSecretFilters>),
-) -> Result<Json<ReadResponse>> {
-    let (req, raw_filters) = data;
-    let state: &AppState = req.state();
-    let filters = raw_filters.into_inner();
+// TODO: add error handling instead of using unwrap
+fn read_secrets(query: ReadSecretFilters, location: Location) -> impl warp::Reply {
+    debug!("In read_secrets");
+    debug!("Query is {:?}", query);
+    debug!("Location is {:?}", location);
 
     let mut secrets = vec![];
-
-    let dir = Path::new(&state.location).join(&filters.group);
-    match filters.secret {
+    let dir = Path::new(&location.path).join(&query.group);
+    match query.secret {
         Some(secret) => {
             let path = dir.join(&secret);
 
-            let mut f = File::open(path)?; // TODO: add failure
+            let mut f = File::open(path).unwrap();
             let mut contents = String::new();
-            f.read_to_string(&mut contents)?; //TODO: add failure
+            f.read_to_string(&mut contents).unwrap();
 
             secrets.push(Secret {
-                group: filters.group.to_string(),
+                group: query.group.to_string(),
                 name: secret.to_string(),
                 value: contents.to_string(),
             });
         }
         None => {
-            for entry_result in dir.read_dir()? {
-                let entry = entry_result?;
-                if entry.file_type()?.is_file() {
+            for entry_result in dir.read_dir().unwrap() {
+                let entry = entry_result.unwrap();
+                if entry.file_type().unwrap().is_file() {
                     let file_name = entry.file_name();
 
-                    let mut f = File::open(entry.path())?; // TODO: add failure
+                    let mut f = File::open(entry.path()).unwrap();
                     let mut contents = String::new();
-                    f.read_to_string(&mut contents)?; //TODO: add failure
+                    f.read_to_string(&mut contents).unwrap();
 
                     secrets.push(Secret {
-                        group: filters.group.to_string(),
+                        group: query.group.to_string(),
                         name: file_name.into_string().expect("to be a string"),
                         value: contents.to_string(),
                     });
@@ -104,10 +74,61 @@ fn read_secret(
             }
         }
     }
-    Ok(Json(ReadResponse { secrets: secrets }))
+
+    warp::reply::json(&secrets)
+}
+
+fn write_secret(secret: Secret, location: Location) -> impl warp::Reply {
+    debug!("In write_secret");
+    debug!("Writing {} secret in group {}", secret.name, secret.group);
+    debug!("Location is {:?}", location);
+
+    let dir = Path::new(&location.path).join(&secret.group);
+    if !Path::exists(&dir) {
+        fs::create_dir_all(&dir).unwrap();
+    }
+    let path = dir.join(&secret.name);
+    if !Path::exists(&path) {
+        File::create(&path).unwrap();
+    }
+    let mut file = OpenOptions::new().write(true).open(&path).unwrap();
+    file.write_all(secret.value.as_bytes()).unwrap();
+
+    StatusCode::CREATED
+}
+
+fn start_server(binding: &str, location: Location) -> Result<(), std::net::AddrParseError> {
+    info!("Starting...");
+
+    let location = warp::any().map(move || location.clone());
+
+    // just represents the path...
+    let secrets = warp::path("secrets");
+    let secrets_index = secrets.and(warp::path::index());
+
+    let read_secrets_route = warp::get(
+        secrets
+            .and(warp::query::<ReadSecretFilters>())
+            .and(location.clone()),
+    ).map(read_secrets);
+
+    let write_secret_route =
+        warp::post(secrets_index.and(warp::body::json()).and(location.clone())).map(write_secret);
+
+    let routes = read_secrets_route
+        .or(write_secret_route)
+        .with(warp::log("secrets_keeper"));
+
+    let binding: std::net::SocketAddr = binding.parse()?;
+
+    warp::serve(routes).run(binding);
+
+    Ok(())
 }
 
 fn main() {
+    env_logger::init();
+
     let matches = ClapApp::new("Secrets keeper")
         .about("A web service for reading and writing secrets")
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -142,26 +163,16 @@ fn main() {
             .value_of("binding")
             .expect("binding to be provided (it's required)")
             .to_string();
-        let location = matches
+        let location_path = matches
             .value_of("location")
             .expect("location to be provided (it's required)")
             .to_string();
 
-        env_logger::init();
+        let location = Location {
+            path: location_path,
+        };
 
-        info!("Starting...");
-
-        server::new(move || {
-            App::with_state(AppState {
-                location: location.clone(),
-            }).middleware(middleware::Logger::default())
-                .resource("/secrets", |r| {
-                    r.method(Method::POST).with(create_secret);
-                    r.method(Method::GET).with(read_secret);
-                })
-        }).bind(&binding)
-            .expect(&format!("Can not bind to {}", binding))
-            .run();
+        start_server(&binding, location).unwrap();
     } else {
         panic!("whaaaaaaat");
     }

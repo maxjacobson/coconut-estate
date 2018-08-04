@@ -12,8 +12,9 @@ use std::collections::HashMap;
 struct UnimplementedSecretsSubcommand;
 
 #[derive(Fail, Debug)]
-#[fail(display = "Expected 200 OK, received {}", status)]
+#[fail(display = "Expected {}, received {}", expected, status)]
 struct UnexpectedResponseFromSecretsKeeper {
+    expected: reqwest::StatusCode,
     status: reqwest::StatusCode,
 }
 
@@ -67,7 +68,7 @@ impl SecretsApp {
                 .send()?,
         };
 
-        self.validate_response(&mut response, true)
+        self.validate_response(&mut response, reqwest::StatusCode::Ok, true)
     }
 
     fn write_secret(
@@ -87,7 +88,7 @@ impl SecretsApp {
             .json(&body)
             .send()?;
 
-        self.validate_response(&mut response, false)
+        self.validate_response(&mut response, reqwest::StatusCode::Created, false)
     }
 
     // N.B.: this might become more complicated later on when tunneling
@@ -99,10 +100,13 @@ impl SecretsApp {
     fn validate_response(
         &self,
         response: &mut reqwest::Response,
+        expected: reqwest::StatusCode,
         print_body: bool,
     ) -> Result<(), Error> {
-        match response.status() {
-            reqwest::StatusCode::Ok => match response.text() {
+        let status = response.status();
+
+        if status == expected {
+            match response.text() {
                 Ok(text) => {
                     if print_body {
                         println!("{}", text);
@@ -116,8 +120,9 @@ impl SecretsApp {
                     println!("Welp, couldn't read response body because {:?}", e);
                     Ok(())
                 }
-            },
-            status @ _ => Err(UnexpectedResponseFromSecretsKeeper { status })?,
+            }
+        } else {
+            Err(UnexpectedResponseFromSecretsKeeper { expected, status })?
         }
     }
 }
