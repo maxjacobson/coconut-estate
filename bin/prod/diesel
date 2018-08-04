@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# this assumes that SSH tunneling is enabled, see bin/database-start-tunnel
+# this assumes that SSH tunneling is enabled, see bin/prod/start-database-tunnel
 
 set -eu
 

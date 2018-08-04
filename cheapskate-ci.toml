@@ -2,7 +2,7 @@
 steps = [
   "cargo fmt --all -- --check",
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
-  "bin/lint-js",
+  "bin/dev/lint-js",
   "cargo check --quiet --all",
   "bin/ember test",
 ]

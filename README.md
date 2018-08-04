@@ -10,7 +10,7 @@
 
 ## Deploying to production
 
-See the various `bin/deploy-*` scripts.
+See the various `bin/deploy/*` scripts.
 
 ## Interacting with the database
 
@@ -23,27 +23,27 @@ See the various `bin/deploy-*` scripts.
 
 * To generate a new migration: `diesel migration generate create_roadmaps`
 * Fill in the generated `up.sql` and `down.sql` files
-* To apply the change in development: `bin/diesel_dev migration run`
+* To apply the change in development: `bin/dev/diesel migration run`
 * To apply the change in production:
-  * Start an SSH tunnel so the diesel CLI on your system can access production: `bin/database-start-tunnel`
-  * `bin/diesel_prod migration run`
+  * Start an SSH tunnel so the diesel CLI on your system can access production: `bin/prod/start-database-tunnel`
+  * `bin/prod/diesel migration run`
 
 ### Opening an interactive database shell
 
 * In development:
-  * Make sure the database is running (`bin/database` or `bin/development-environment`)
-  * `bin/psql_dev`
+  * Make sure the database is running (`bin/dev/database` or `bin/dev/full-environment`)
+  * `bin/dev/psql`
 * In production:
-  * `bin/psql_prod`
+  * `bin/prod/psql`
 
 ## Style guide
 
-Please run `bin/lint` before committing (consider running it as part of a before-commit hook).
-Running `bin/delint` will fix most issues surfaced there.
+Please run `bin/dev/lint` before committing (consider running it as part of a before-commit hook).
+Running `bin/dev/delint` will fix most issues surfaced there.
 
-- For Rust code: follow `rustfmt` (in `bin/lint`)
-- For Terraform code, follow `terraform fmt` (in `bin/lint`)
-- For JavaScript, I like Standard and I'd like to return it, but I'm new to ember and for now I'm following their conventions, which is a particular ember-specific eslint configuration (in `bin/lint`)
+- For Rust code: follow `rustfmt` (in `bin/dev/lint`)
+- For Terraform code, follow `terraform fmt` (in `bin/dev/lint`)
+- For JavaScript, I like Standard and I'd like to return it, but I'm new to ember and for now I'm following their conventions, which is a particular ember-specific eslint configuration (in `bin/dev/lint`)
 - For Markdown: don't hard-wrap text at any particular column.
   Instead, do one line per sentence.
   It feels and looks weird at first and then it's _omg so nice_ to not have to rewrap paragraphs when tweaking stuff you wrote before.

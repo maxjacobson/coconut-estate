@@ -1,4 +1,4 @@
-database: bin/database
-api: bin/api
-secrets: bin/secrets-keeper
-website: bin/website
+database: bin/dev/database
+api: bin/dev/api
+secrets: bin/dev/secrets-keeper
+website: bin/dev/website

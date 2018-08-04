@@ -9,7 +9,7 @@ prod.env
 #     postgres        #
 #######################
 #
-dev
+/dev
 
 ##########################
 # rust compilation cache #
