@@ -1,6 +1,6 @@
 [ci]
 steps = [
-  "cargo fmt --all -- --write-mode=diff",
+  "cargo fmt --all -- --check",
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
   "bin/lint-js",
   "cargo check --quiet --all",

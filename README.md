@@ -2,7 +2,7 @@
 
 ## setting up your dev environment
 
-* Install Rust 1.26+ <https://rustup.rs/>
+* Install Rust 1.28+ <https://rustup.rs/>
 * Install Terraform
 * Install npm
 * Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
