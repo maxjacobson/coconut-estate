@@ -9,7 +9,9 @@ const Router = EmberRouter.extend({
 Router.map(function() {
   this.route('about');
   this.route('contact');
-  this.route('roadmaps');
+  this.route('roadmaps', function() {
+    this.route('show', { path: '/:roadmap_id' });
+  });
 
   this.route('404', { path: '/*path' });
 });

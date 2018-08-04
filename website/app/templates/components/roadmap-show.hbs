@@ -1,8 +1,6 @@
 <div class="roadmap">
   <h3>
-    {{#link-to "roadmaps.show" roadmap}}
-      {{ roadmap.name }}
-    {{/link-to}}
+    {{ roadmap.name }}
 
     <small title={{ format-roadmap-time roadmap.createdAt 'friendly' }}>
       ({{ format-roadmap-time roadmap.createdAt 'relative' }})
