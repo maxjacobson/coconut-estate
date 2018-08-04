@@ -33,6 +33,11 @@ struct ReadSecretFilters {
     secret: Option<String>,
 }
 
+#[derive(Serialize)]
+struct SecretsResponse {
+    secrets: Vec<Secret>,
+}
+
 // TODO: add error handling instead of using unwrap
 fn read_secrets(query: ReadSecretFilters, location: Location) -> impl warp::Reply {
     debug!("In read_secrets");
@@ -75,7 +80,9 @@ fn read_secrets(query: ReadSecretFilters, location: Location) -> impl warp::Repl
         }
     }
 
-    warp::reply::json(&secrets)
+    let secret_response = SecretsResponse { secrets };
+
+    warp::reply::json(&secret_response)
 }
 
 fn write_secret(secret: Secret, location: Location) -> impl warp::Reply {
