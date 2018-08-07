@@ -34,7 +34,6 @@ graphql_object!(QueryRoot: () |&self| {
             roadmaps.filter(id.eq(query_id)).first(&conn)?
         };
 
-
         Ok(Roadmap{
             created_at: roadmap.created_at,
             id: roadmap.id,
@@ -67,7 +66,32 @@ graphql_object!(QueryRoot: () |&self| {
 
 pub struct MutationRoot;
 
-graphql_object!(MutationRoot: () | &self | {});
+graphql_object!(MutationRoot: () |&self| {
+    field createRoadmap(&executor, name: String) -> FieldResult<Roadmap> {
+        debug!("Attempting to insert a roadmap with name: {}", name);
+        debug!("Executor context looks like: {:#?}", executor.context());
+
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let conn = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
+
+        let provided_name = name;
+        let roadmap: models::Roadmap = {
+            use database_schema::roadmaps::dsl::*;
+            use diesel::dsl::insert_into;
+
+            insert_into(roadmaps).values(name.eq(&provided_name)).get_result(&conn)?
+        };
+
+
+        Ok(Roadmap{
+            created_at: roadmap.created_at,
+            id: roadmap.id,
+            name: roadmap.name,
+            updated_at: roadmap.updated_at,
+        })
+    }
+});
 
 pub type Schema = RootNode<'static, QueryRoot, MutationRoot>;
 
