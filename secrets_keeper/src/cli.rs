@@ -8,9 +8,9 @@ impl App {
     pub fn run() {
         let matches = ClapApp::new("Secrets keeper")
             .about("A web service for reading and writing secrets")
+            .setting(AppSettings::DisableVersion)
             .setting(AppSettings::SubcommandRequiredElseHelp)
             .setting(AppSettings::VersionlessSubcommands)
-            .version(crate_version!())
             .subcommand(
                 SubCommand::with_name("run")
                     .about("Run the server")

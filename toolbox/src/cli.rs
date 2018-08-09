@@ -17,9 +17,9 @@ impl App {
     pub fn run(&self) -> Result<(), Error> {
         let matches = ClapApp::new("Toolbox")
             .about("CLI for operating production")
+            .setting(AppSettings::DisableVersion)
             .setting(AppSettings::SubcommandRequiredElseHelp)
             .setting(AppSettings::VersionlessSubcommands)
-            .version(crate_version!())
             .subcommand(
                 SubCommand::with_name("secrets")
                     .about("Interact with the secrets keeper service")

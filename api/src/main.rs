@@ -2,7 +2,6 @@ extern crate actix_web;
 
 extern crate chrono;
 
-#[macro_use]
 extern crate clap;
 
 extern crate env_logger;

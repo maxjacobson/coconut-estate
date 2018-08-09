@@ -9,9 +9,9 @@ impl Api {
     pub fn start() {
         let matches = ClapApp::new("api")
             .about("An HTTP API server")
+            .setting(AppSettings::DisableVersion)
             .setting(AppSettings::SubcommandRequiredElseHelp)
             .setting(AppSettings::VersionlessSubcommands)
-            .version(crate_version!())
             .subcommand(
                 SubCommand::with_name("run")
                     .about("Run the server")
