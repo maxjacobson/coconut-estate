@@ -12,3 +12,4 @@ Host *
     UserKnownHostsFile     /dev/null
     UseRoaming             no
     ServerAliveInterval    60
+    LogLevel QUIET
