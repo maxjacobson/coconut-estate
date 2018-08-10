@@ -23,13 +23,13 @@ pub fn start(binding: &str, location: Location) -> Result<(), std::net::AddrPars
     let write_secret_route =
         warp::post(secrets_index.and(warp::body::json()).and(location.clone())).map(write_secret);
 
-    let routes = read_secrets_route
-        .or(write_secret_route)
-        .with(warp::log("secrets_keeper"));
+    let routes = read_secrets_route.or(write_secret_route);
+
+    let logging = warp::log("secrets_keeper");
 
     let binding: std::net::SocketAddr = binding.parse()?;
 
-    warp::serve(routes).run(binding);
+    warp::serve(routes.with(logging)).run(binding);
 
     Ok(())
 }
