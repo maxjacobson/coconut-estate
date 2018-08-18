@@ -4,6 +4,8 @@ use juniper::FieldResult;
 use juniper::RootNode;
 use std::env;
 
+use database_schema::roadmaps;
+use diesel::dsl::insert_into;
 use models;
 
 #[derive(GraphQLObject)]
@@ -26,13 +28,7 @@ graphql_object!(QueryRoot: () |&self| {
         debug!("Looking up roadmap with id {}", id);
         debug!("Executor context looks like: {:#?}", executor.context());
 
-        let query_id = id;
-
-        let roadmap: models::Roadmap = {
-            use database_schema::roadmaps::dsl::*;
-
-            roadmaps.filter(id.eq(query_id)).first(&conn)?
-        };
+        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&conn)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,
@@ -49,11 +45,7 @@ graphql_object!(QueryRoot: () |&self| {
         let conn = PgConnection::establish(&database_url)
             .expect(&format!("Error connecting to {}", database_url));
 
-        let roadmaps: Vec<models::Roadmap> = {
-            use database_schema::roadmaps::dsl::*;
-
-            roadmaps.load(&conn)?
-        };
+        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&conn)?;
 
         Ok(roadmaps.iter().map(|roadmap| Roadmap {
             created_at: roadmap.created_at,
@@ -75,14 +67,8 @@ graphql_object!(MutationRoot: () |&self| {
         let conn = PgConnection::establish(&database_url)
             .expect(&format!("Error connecting to {}", database_url));
 
-        let provided_name = name;
-        let roadmap: models::Roadmap = {
-            use database_schema::roadmaps::dsl::*;
-            use diesel::dsl::insert_into;
-
-            insert_into(roadmaps).values(name.eq(&provided_name)).get_result(&conn)?
-        };
-
+        let roadmap: models::Roadmap = insert_into(roadmaps::table).
+            values(roadmaps::name.eq(&name)).get_result(&conn)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,
