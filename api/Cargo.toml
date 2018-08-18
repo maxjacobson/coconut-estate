@@ -24,3 +24,6 @@ log = "~0.4"
 
 # GraphQL
 juniper = "~0.9"
+
+# Password hashing
+libpasta = "0.0.5"

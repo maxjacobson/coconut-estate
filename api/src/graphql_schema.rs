@@ -4,8 +4,9 @@ use juniper::FieldResult;
 use juniper::RootNode;
 use std::env;
 
-use database_schema::roadmaps;
+use database_schema::{roadmaps, users};
 use diesel::dsl::insert_into;
+use libpasta;
 use models;
 
 #[derive(GraphQLObject)]
@@ -14,6 +15,16 @@ struct Roadmap {
     created_at: NaiveDateTime,
     id: i32,
     name: String,
+    updated_at: NaiveDateTime,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(description = "Someone following a roadmap")]
+struct User {
+    created_at: NaiveDateTime,
+    id: i32,
+    name: String,
+    email: String,
     updated_at: NaiveDateTime,
 }
 
@@ -59,6 +70,33 @@ graphql_object!(QueryRoot: () |&self| {
 pub struct MutationRoot;
 
 graphql_object!(MutationRoot: () |&self| {
+    field createUser(&executor, name: String, email: String, password: String) -> FieldResult<User> {
+        debug!("Attempting to insert a user with name: {}, email: {}", name, email);
+        debug!("Executor context looks like: {:#?}", executor.context());
+
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let conn = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
+
+        let password_hash = libpasta::hash_password(password);
+
+        let user: models::User = insert_into(users::table).values(
+            (
+                users::name.eq(name),
+                users::email.eq(email),
+                users::password_hash.eq(password_hash),
+            )
+        ).get_result(&conn)?;
+
+        Ok(User {
+            created_at: user.created_at,
+            email: user.email,
+            id: user.id,
+            name: user.name,
+            updated_at: user.updated_at,
+        })
+    }
+
     field createRoadmap(&executor, name: String) -> FieldResult<Roadmap> {
         debug!("Attempting to insert a roadmap with name: {}", name);
         debug!("Executor context looks like: {:#?}", executor.context());

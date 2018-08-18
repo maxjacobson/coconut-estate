@@ -15,6 +15,8 @@ extern crate diesel;
 #[macro_use]
 extern crate juniper;
 
+extern crate libpasta;
+
 #[macro_use]
 extern crate serde_derive;
 
