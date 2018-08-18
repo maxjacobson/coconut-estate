@@ -26,6 +26,7 @@ struct User {
     name: String,
     email: String,
     updated_at: NaiveDateTime,
+    username: String,
 }
 
 pub struct QueryRoot;
@@ -70,7 +71,7 @@ graphql_object!(QueryRoot: () |&self| {
 pub struct MutationRoot;
 
 graphql_object!(MutationRoot: () |&self| {
-    field createUser(&executor, name: String, email: String, password: String) -> FieldResult<User> {
+    field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<User> {
         debug!("Attempting to insert a user with name: {}, email: {}", name, email);
         debug!("Executor context looks like: {:#?}", executor.context());
 
@@ -85,6 +86,7 @@ graphql_object!(MutationRoot: () |&self| {
                 users::name.eq(name),
                 users::email.eq(email),
                 users::password_hash.eq(password_hash),
+                users::username.eq(username),
             )
         ).get_result(&conn)?;
 
@@ -94,6 +96,7 @@ graphql_object!(MutationRoot: () |&self| {
             id: user.id,
             name: user.name,
             updated_at: user.updated_at,
+            username: user.username,
         })
     }
 

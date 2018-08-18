@@ -16,4 +16,5 @@ pub struct User {
     pub password_hash: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub username: String,
 }

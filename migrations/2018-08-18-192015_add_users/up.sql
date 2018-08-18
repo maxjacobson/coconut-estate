@@ -8,5 +8,5 @@ create table users (
   updated_at timestamp not null default now()
 );
 
-SELECT diesel_manage_updated_at('users');
-CREATE UNIQUE INDEX name ON users (email);
+select diesel_manage_updated_at('users');
+create unique index name on users (email);
