@@ -79,7 +79,7 @@ graphql_object!(MutationRoot: () |&self| {
         let conn = PgConnection::establish(&database_url)
             .expect(&format!("Error connecting to {}", database_url));
 
-        let password_hash = libpasta::hash_password(password);
+        let password_hash = libpasta::hash_password(&password);
 
         let user: models::User = insert_into(users::table).values(
             (
