@@ -2,12 +2,20 @@ use actix_web::{http::Method, middleware, middleware::cors::Cors, server, App as
 
 use handlers::respond_to_graphql_request;
 
+use graphql_schema::{create_schema, Schema};
+
 pub struct App;
+
+pub struct AppState {
+    pub schema: Schema,
+}
 
 impl App {
     pub fn run(cors_allowed_origin: String, binding: String) {
         server::new(move || {
-            ActixWebApp::new()
+            let schema = create_schema();
+
+            ActixWebApp::with_state(AppState { schema })
                 .middleware(middleware::Logger::default())
                 .configure(|app| {
                     Cors::for_app(app)
