@@ -4,7 +4,6 @@ set -ex
 
 # See https://github.com/maxjacobson/cheapskate-ci
 bin/helpers/install_cheapskate-ci
-export RUST_LOG="cheapskate_ci=debug"
 cheapskate-ci run
 
 echo "All good"
