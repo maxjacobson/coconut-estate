@@ -19,6 +19,12 @@ See the various `bin/deploy/*` scripts.
 * Create and fill in `dev.env` (see `dev.env.example`)
 * Create and fill in `prod.env` (see `prod.env.example`)
 
+### Setting up the initial database locally
+
+```shell
+bin/dev/diesel database setup
+```
+
 ### Migrating the schema
 
 * To generate a new migration: `diesel migration generate create_roadmaps`

@@ -6,4 +6,4 @@
 
 set -e
 
-RUST_LOG="toolbox=debug,reqwest=debug,serde=debug" bin/helpers/run-package toolbox "$@"
+docker-compose run --rm toolbox cargo run --quiet --package toolbox -- "$@"

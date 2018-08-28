@@ -1,9 +1,0 @@
-#!/bin/sh
-
-set -e
-
-command -v diesel > /dev/null || cargo install diesel_cli --no-default-features --features postgres
-if ! diesel --version | grep --quiet "diesel 1.3"; then
-  echo "Your diesel CLI version might not be right (use your judgment, I could be wrong!)"
-  exit 1
-fi

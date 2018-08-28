@@ -7,12 +7,4 @@
 set -eu
 
 source ./dev.env
-
-id="$(bin/helpers/local_postgres_container_id)"
-
-if [ -n "$id" ]; then
-  docker exec -it $id psql -U $PG_USER -d $PG_DATABASE
-else
-  echo "Database not running? Try bin/dev/database or bin/dev/full-environment"
-  exit 1
-fi
+docker-compose exec postgres psql -U $POSTGRES_USER -d $PG_DATABASE

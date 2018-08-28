@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# N.B.
-# This file is intended for use in your development environment, and not
-# production
-
-set -e
-
-bin/ember server

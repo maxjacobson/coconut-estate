@@ -1,0 +1,104 @@
+version: "3.7"
+
+volumes:
+  postgres:
+  rust_registry:
+  rust_target:
+  secrets_location:
+  website_node_modules:
+  website_tmp:
+
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: docker-helpers/rust-monorepo/Dockerfile
+    command: cargo run --package api -- run --binding 0.0.0.0:5001 --cors http://localhost:5000
+    depends_on:
+      - postgres
+    env_file:
+      - dev.env
+    image: coconut-estate/rust-monorepo
+    ports:
+      - 5001:5001
+    volumes:
+      - ./:/rust-monorepo
+      - rust_target:/rust-monorepo/target
+      - rust_target:/root/.cargo/registry
+
+  website:
+    build:
+      context: ./
+      dockerfile: docker-helpers/node/Dockerfile
+    command: npx ember server
+    depends_on:
+      - api
+    env_file:
+      - dev.env
+    image: coconut-estate/node
+    ports:
+      - 5000:5000
+    volumes:
+      - ./website:/node-code
+      - website_node_modules:/node-code/node_modules
+      - website_tmp:/node-code/tmp
+
+  postgres:
+    command: "-c 'log_statement=all'"
+    env_file:
+      - dev.env
+    image: postgres:9.5
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  secrets-keeper:
+    build:
+      context: ./
+      dockerfile: docker-helpers/rust-monorepo/Dockerfile
+    command: cargo run --package secrets_keeper -- run --binding 0.0.0.0:5002 --location /location-of-secrets
+    environment:
+      RUST_LOG: warp=debug,secrets_keeper=debug
+    env_file:
+      - dev.env
+    image: coconut-estate/rust-monorepo
+    volumes:
+      - ./:/rust-monorepo
+      - rust_target:/rust-monorepo/target
+      - rust_target:/root/.cargo/registry
+      - secrets_location:/location-of-secrets
+
+  toolbox:
+    build:
+      context: ./
+      dockerfile: docker-helpers/rust-monorepo/Dockerfile
+    environment:
+      RUST_LOG: toolbox=debug,reqwest=debug,serde=debug
+    env_file:
+      - dev.env
+    image: coconut-estate/rust-monorepo
+    volumes:
+      - ./:/rust-monorepo
+      - rust_target:/rust-monorepo/target
+      - rust_target:/root/.cargo/registry
+
+  diesel:
+    build:
+      context: ./
+      dockerfile: docker-helpers/rust-monorepo/Dockerfile
+    env_file:
+      - dev.env
+    image: coconut-estate/rust-monorepo
+    volumes:
+      - ./:/rust-monorepo
+      - rust_target:/rust-monorepo/target
+      - rust_target:/root/.cargo/registry
+
+  build:
+    build:
+      context: ./
+      dockerfile: docker-helpers/rust-monorepo/Dockerfile
+    image: coconut-estate/rust-monorepo
+    volumes:
+      - ./:/rust-monorepo
+      - rust_target:/rust-monorepo/target
+      - rust_target:/root/.cargo/registry

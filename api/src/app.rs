@@ -1,13 +1,21 @@
 use actix_web::{http::Method, middleware, middleware::cors::Cors, server, App as ActixWebApp};
+use diesel::prelude::*;
 
 use handlers::respond_to_graphql_request;
 
 use graphql_schema::{create_schema, Schema};
 
+use std::env;
+
 pub struct App;
 
-pub struct AppState {
+pub struct ServerState {
     pub schema: Schema,
+    pub app_state: AppState,
+}
+
+pub struct AppState {
+    pub connection: PgConnection,
 }
 
 impl App {
@@ -15,7 +23,22 @@ impl App {
         server::new(move || {
             let schema = create_schema();
 
-            ActixWebApp::with_state(AppState { schema })
+            let pg_user = Self::read_env("POSTGRES_USER");
+            let pg_password = Self::read_env("POSTGRES_PASSWORD");
+            let pg_host = Self::read_env("POSTGRES_HOST");
+            let pg_port = Self::read_env("POSTGRES_PORT");
+            let pg_database = Self::read_env("PG_DATABASE");
+
+            let database_url = format!(
+                "postgres://{}:{}@{}:{}/{}",
+                pg_user, pg_password, pg_host, pg_port, pg_database
+            );
+
+            let connection = PgConnection::establish(&database_url)
+                .expect(&format!("Error connecting to {}", database_url));
+            let app_state = AppState { connection };
+
+            ActixWebApp::with_state(ServerState { schema, app_state })
                 .middleware(middleware::Logger::default())
                 .configure(|app| {
                     Cors::for_app(app)
@@ -28,5 +51,9 @@ impl App {
         }).bind(&binding)
             .expect(&format!("Can not bind to {}", binding))
             .run();
+    }
+
+    fn read_env(var: &str) -> String {
+        env::var(var).unwrap_or_else(|_e| panic!("{} not set in env", var))
     }
 }

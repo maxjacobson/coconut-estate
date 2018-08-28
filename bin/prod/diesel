@@ -4,7 +4,12 @@
 
 set -eu
 
+# TODO: make this work in the docker context or update to require a natively-installed diesel
+
 source ./prod.env
-bin/helpers/install_diesel_cli
-url="postgres://$PG_USER:$PG_PASSWORD@localhost:6003/$PG_DATABASE"
-diesel --database-url "$url" "$@"
+url="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:6003/$PG_DATABASE"
+
+docker-compose run \
+  -e SSH_AUTH_SOCK \
+  --volume "$SSH_AUTH_SOCK:$SSH_AUTH_SOCK" \
+  --rm diesel diesel --database-url "$url" "$@"

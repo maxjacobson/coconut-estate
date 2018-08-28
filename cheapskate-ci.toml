@@ -4,7 +4,7 @@ steps = [
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
   "bin/dev/lint-js",
   "cargo check --quiet --all",
-  "bin/ember test",
+  "bin/dev/test-js",
 ]
 
 [github]

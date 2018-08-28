@@ -1,13 +1,14 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use juniper::FieldResult;
-use juniper::RootNode;
-use std::env;
+use juniper::{self, FieldResult, RootNode};
 
+use app::AppState;
 use database_schema::{roadmaps, users};
 use diesel::dsl::insert_into;
 use libpasta;
 use models;
+
+impl juniper::Context for AppState {}
 
 #[derive(GraphQLObject)]
 #[graphql(description = "A plan to follow")]
@@ -31,16 +32,13 @@ struct User {
 
 pub struct QueryRoot;
 
-graphql_object!(QueryRoot: () |&self| {
+graphql_object!(QueryRoot: AppState |&self| {
     field roadmap(&executor, id: i32) -> FieldResult<Roadmap> {
-        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let conn = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
+        let context = executor.context();
 
         debug!("Looking up roadmap with id {}", id);
-        debug!("Executor context looks like: {:#?}", executor.context());
 
-        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&conn)?;
+        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&context.connection)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,
@@ -53,11 +51,9 @@ graphql_object!(QueryRoot: () |&self| {
     field roadmaps(&executor) -> FieldResult<Vec<Roadmap>> {
         // TODO: consider moving as much code as possible out of macros so rustfmt can be more sure
         // how to reformat it
-        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let conn = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
+        let context = executor.context();
 
-        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&conn)?;
+        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&context.connection)?;
 
         Ok(roadmaps.iter().map(|roadmap| Roadmap {
             created_at: roadmap.created_at,
@@ -70,14 +66,10 @@ graphql_object!(QueryRoot: () |&self| {
 
 pub struct MutationRoot;
 
-graphql_object!(MutationRoot: () |&self| {
+graphql_object!(MutationRoot: AppState |&self| {
     field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<User> {
         debug!("Attempting to insert a user with name: {}, email: {}", name, email);
-        debug!("Executor context looks like: {:#?}", executor.context());
-
-        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let conn = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
+        let context = executor.context();
 
         let password_hash = libpasta::hash_password(&password);
 
@@ -88,7 +80,7 @@ graphql_object!(MutationRoot: () |&self| {
                 users::password_hash.eq(password_hash),
                 users::username.eq(username),
             )
-        ).get_result(&conn)?;
+        ).get_result(&context.connection)?;
 
         Ok(User {
             created_at: user.created_at,
@@ -102,14 +94,11 @@ graphql_object!(MutationRoot: () |&self| {
 
     field createRoadmap(&executor, name: String) -> FieldResult<Roadmap> {
         debug!("Attempting to insert a roadmap with name: {}", name);
-        debug!("Executor context looks like: {:#?}", executor.context());
 
-        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        let conn = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
+        let context = executor.context();
 
         let roadmap: models::Roadmap = insert_into(roadmaps::table).
-            values(roadmaps::name.eq(&name)).get_result(&conn)?;
+            values(roadmaps::name.eq(&name)).get_result(&context.connection)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,

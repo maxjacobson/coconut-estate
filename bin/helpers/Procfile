@@ -1,4 +1,0 @@
-database: bin/dev/database
-api: bin/dev/api
-secrets: bin/dev/secrets-keeper
-website: bin/dev/website

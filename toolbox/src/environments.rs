@@ -30,7 +30,7 @@ impl Environment {
 
     pub fn secrets_keeper_root(&self) -> String {
         match self {
-            Environment::Development => "http://localhost:5002".to_string(),
+            Environment::Development => "http://secrets-keeper:5002".to_string(),
             Environment::Production => "http://localhost:6002".to_string(),
         }
     }

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -eu
-
-source ./dev.env
-docker ps --filter name="$PG_CONTAINER_NAME" --format "{{.ID}}"

@@ -9,27 +9,10 @@ if [ -z "$package" ]; then
   exit 1
 fi
 
-command -v docker >/dev/null
-
-IMAGE_NAME="coconutestate/cargo"
-echo "==> Building docker image to help build $package"
-docker build . --tag $IMAGE_NAME --quiet
-echo "==> Building $package in docker"
-docker run --rm --interactive --tty \
-  --volume "$(pwd):/code" \
-  --volume "$(pwd)/.docker-cache/registry:/root/.cargo/registry" \
-  --volume "$(pwd)/.docker-cache/target:/code/target" \
-  --workdir /code \
-  $IMAGE_NAME cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
-
-path=".docker-cache/target/x86_64-unknown-linux-gnu/release/$package"
-if [ -f "$path" ]; then
-  echo "==> Binary created at:"
-  echo "$path"
-else
-  echo "Success, but seems like no binary was produced"
-fi
-
-sudo --validate --prompt="==> Please provide password so we can make sure docker doesn't futz with your permissions: "
-sudo chown -R $(id -un):$(id -gn) .docker-cache
-sudo chown -R $(id -un):$(id -gn) target
+command -v docker-compose >/dev/null
+mkdir -p deploy-artifacts
+docker-compose run --rm build cargo build --release --target=x86_64-unknown-linux-gnu --package "$package"
+docker-compose run --rm \
+  --volume "$(pwd)/deploy-artifacts:/deploy-artifacts" \
+  build \
+  cp "/rust-monorepo/target/x86_64-unknown-linux-gnu/release/$package" "/deploy-artifacts"

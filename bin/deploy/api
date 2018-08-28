@@ -4,7 +4,7 @@ set -ex
 
 bin/prod/build api
 
-bin/scp .docker-cache/target/x86_64-unknown-linux-gnu/release/api \
+bin/scp deploy-artifacts/api \
   www.coconutestate.top:/mnt/website/binary/api-new
 
 bin/ssh www.coconutestate.top sudo systemctl stop api.service

@@ -2,9 +2,12 @@
 
 set -ex
 
-bin/ember build --environment=production
+mkdir -p deploy-artifacts/website
+docker-compose run --rm \
+  --volume "$(pwd)/deploy-artifacts/website/dist:/node-code/dist" \
+  website npx ember build --environment=production
 
-bin/scp -r website/dist \
+bin/scp -r deploy-artifacts/website/dist \
   www.coconutestate.top:/mnt/website/website-new
 
 bin/ssh www.coconutestate.top rm -rf /mnt/website/website

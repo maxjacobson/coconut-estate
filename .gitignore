@@ -15,8 +15,8 @@ prod.env
 # rust compilation cache #
 ##########################
 #
+deploy-artifacts
 target
-.docker-cache
 
 ########################
 #     terraform        #
