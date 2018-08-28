@@ -37,7 +37,7 @@ bin/dev/diesel database setup
 ### Opening an interactive database shell
 
 * In development:
-  * Make sure the database is running (`bin/dev/database` or `bin/dev/full-environment`)
+  * Make sure the database is running
   * `bin/dev/psql`
 * In production:
   * `bin/prod/psql`
