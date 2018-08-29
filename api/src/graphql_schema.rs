@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
-use diesel::prelude::*;
-use juniper::{self, FieldResult, RootNode};
+use diesel::prelude::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use juniper::{self, FieldError, FieldResult, RootNode};
 
 use app::AppState;
 use database_schema::{roadmaps, users};
@@ -28,6 +28,12 @@ struct User {
     email: String,
     updated_at: NaiveDateTime,
     username: String,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(description = "Details of a successful sign in")]
+struct SignIn {
+    token: String,
 }
 
 pub struct QueryRoot;
@@ -106,6 +112,34 @@ graphql_object!(MutationRoot: AppState |&self| {
             name: roadmap.name,
             updated_at: roadmap.updated_at,
         })
+    }
+
+    field signIn(&executor, email_or_username: String, password: String) -> FieldResult<SignIn> {
+        debug!("Attempting to sign in as {}", email_or_username);
+
+        let context = executor.context();
+
+        if let Some(user) = models::User::load_from_email_or_username(&email_or_username, &context.connection)? {
+            if libpasta::verify_password(&user.password_hash, &password) {
+                let token = "????".to_string(); // TODO: real token?
+
+                Ok(SignIn { token })
+            } else {
+                Err(
+                    FieldError::new(
+                        "Password did not match",
+                        graphql_value!({ "sign_in": "Password did not match" }),
+                    )
+                )
+            }
+        } else {
+            Err(
+                FieldError::new(
+                    "No user found",
+                    graphql_value!({ "sign_in": "No user found" }),
+                )
+            )
+        }
     }
 });
 
