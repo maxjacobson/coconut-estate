@@ -13,10 +13,6 @@ pub struct App;
 
 pub struct ServerState {
     pub schema: Schema,
-    pub app_state: AppState,
-}
-
-pub struct AppState {
     pub pool: r2d2::Pool<ConnectionManager<PgConnection>>,
     pub jwt_secret: String,
 }
@@ -41,10 +37,11 @@ impl App {
             let manager: ConnectionManager<PgConnection> = ConnectionManager::new(database_url);
             let pool = r2d2::Pool::builder().max_size(15).build(manager).unwrap();
 
-            let app_state = AppState { pool, jwt_secret };
-
-            ActixWebApp::with_state(ServerState { schema, app_state })
-                .middleware(middleware::Logger::default())
+            ActixWebApp::with_state(ServerState {
+                schema,
+                pool,
+                jwt_secret,
+            }).middleware(middleware::Logger::default())
                 .configure(|app| {
                     Cors::for_app(app)
                         .allowed_origin(&cors_allowed_origin)

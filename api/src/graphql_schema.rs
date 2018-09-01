@@ -2,13 +2,15 @@ use chrono::NaiveDateTime;
 use diesel::prelude::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use juniper::{self, FieldError, FieldResult, RootNode};
 
-use app::AppState;
 use database_schema::{roadmaps, users};
 use diesel::dsl::insert_into;
+use handlers::RequestContext;
 use libpasta;
 use models;
 
-impl juniper::Context for AppState {}
+use std;
+
+impl juniper::Context for RequestContext {}
 
 #[derive(GraphQLObject)]
 #[graphql(description = "A plan to follow")]
@@ -30,6 +32,19 @@ struct User {
     username: String,
 }
 
+impl std::convert::From<models::User> for User {
+    fn from(user: models::User) -> User {
+        User {
+            created_at: user.created_at,
+            email: user.email,
+            id: user.id,
+            name: user.name,
+            updated_at: user.updated_at,
+            username: user.username,
+        }
+    }
+}
+
 #[derive(GraphQLObject)]
 #[graphql(description = "Details of a successful sign in")]
 struct SignIn {
@@ -38,7 +53,7 @@ struct SignIn {
 
 pub struct QueryRoot;
 
-graphql_object!(QueryRoot: AppState |&self| {
+graphql_object!(QueryRoot: RequestContext |&self| {
     field roadmap(&executor, id: i32) -> FieldResult<Roadmap> {
         let context = executor.context();
         let connection = context.pool.get()?;
@@ -70,13 +85,27 @@ graphql_object!(QueryRoot: AppState |&self| {
             updated_at: roadmap.updated_at,
         }).collect())
     }
+
+    field user(&executor) -> FieldResult<User> {
+        debug!("Attempting to look up current user");
+
+        let context = executor.context();
+        let connection = context.pool.get()?;
+
+        let user_id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
+
+        let user: models::User = users::table.filter(users::id.eq(user_id)).first(&connection)?;
+
+        Ok(user.into())
+    }
 });
 
 pub struct MutationRoot;
 
-graphql_object!(MutationRoot: AppState |&self| {
+graphql_object!(MutationRoot: RequestContext |&self| {
     field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<User> {
         debug!("Attempting to insert a user with name: {}, email: {}", name, email);
+
         let context = executor.context();
         let connection = context.pool.get()?;
 
@@ -91,14 +120,7 @@ graphql_object!(MutationRoot: AppState |&self| {
             )
         ).get_result(&connection)?;
 
-        Ok(User {
-            created_at: user.created_at,
-            email: user.email,
-            id: user.id,
-            name: user.name,
-            updated_at: user.updated_at,
-            username: user.username,
-        })
+        Ok(user.into())
     }
 
     field createRoadmap(&executor, name: String) -> FieldResult<Roadmap> {
