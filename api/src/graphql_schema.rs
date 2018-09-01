@@ -41,10 +41,11 @@ pub struct QueryRoot;
 graphql_object!(QueryRoot: AppState |&self| {
     field roadmap(&executor, id: i32) -> FieldResult<Roadmap> {
         let context = executor.context();
+        let connection = context.pool.get()?;
 
         debug!("Looking up roadmap with id {}", id);
 
-        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&context.connection)?;
+        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&connection)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,
@@ -58,8 +59,9 @@ graphql_object!(QueryRoot: AppState |&self| {
         // TODO: consider moving as much code as possible out of macros so rustfmt can be more sure
         // how to reformat it
         let context = executor.context();
+        let connection = context.pool.get()?;
 
-        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&context.connection)?;
+        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&connection)?;
 
         Ok(roadmaps.iter().map(|roadmap| Roadmap {
             created_at: roadmap.created_at,
@@ -76,6 +78,7 @@ graphql_object!(MutationRoot: AppState |&self| {
     field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<User> {
         debug!("Attempting to insert a user with name: {}, email: {}", name, email);
         let context = executor.context();
+        let connection = context.pool.get()?;
 
         let password_hash = libpasta::hash_password(&password);
 
@@ -86,7 +89,7 @@ graphql_object!(MutationRoot: AppState |&self| {
                 users::password_hash.eq(password_hash),
                 users::username.eq(username),
             )
-        ).get_result(&context.connection)?;
+        ).get_result(&connection)?;
 
         Ok(User {
             created_at: user.created_at,
@@ -102,9 +105,10 @@ graphql_object!(MutationRoot: AppState |&self| {
         debug!("Attempting to insert a roadmap with name: {}", name);
 
         let context = executor.context();
+        let connection = context.pool.get()?;
 
         let roadmap: models::Roadmap = insert_into(roadmaps::table).
-            values(roadmaps::name.eq(&name)).get_result(&context.connection)?;
+            values(roadmaps::name.eq(&name)).get_result(&connection)?;
 
         Ok(Roadmap{
             created_at: roadmap.created_at,
@@ -118,8 +122,9 @@ graphql_object!(MutationRoot: AppState |&self| {
         debug!("Attempting to sign in as {}", email_or_username);
 
         let context = executor.context();
+        let connection = context.pool.get()?;
 
-        if let Some(user) = models::User::load_from_email_or_username(&email_or_username, &context.connection)? {
+        if let Some(user) = models::User::load_from_email_or_username(&email_or_username, &connection)? {
             if libpasta::verify_password(&user.password_hash, &password) {
                 let token = user.generate_token(&context.jwt_secret);
 

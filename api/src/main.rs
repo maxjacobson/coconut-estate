@@ -12,17 +12,19 @@ extern crate log;
 #[macro_use]
 extern crate diesel;
 
+extern crate jsonwebtoken;
+
 #[macro_use]
 extern crate juniper;
 
 extern crate libpasta;
 
+extern crate r2d2;
+
 #[macro_use]
 extern crate serde_derive;
 
 extern crate serde_json;
-
-extern crate jsonwebtoken;
 
 mod app;
 mod auth;

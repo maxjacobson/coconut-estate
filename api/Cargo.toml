@@ -16,7 +16,8 @@ clap = "~2.31"
 
 # Database ORM
 chrono = { version = "~0.4", features = ["serde"] }
-diesel = { version = "1.0.0", features = ["postgres", "chrono"] }
+diesel = { version = "1.0.0", features = ["postgres", "chrono", "r2d2"] }
+r2d2 = "~0.8"
 
 # logging
 env_logger = "~0.5"

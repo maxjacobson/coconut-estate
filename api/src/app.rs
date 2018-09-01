@@ -1,5 +1,7 @@
 use actix_web::{http::Method, middleware, middleware::cors::Cors, server, App as ActixWebApp};
-use diesel::prelude::*;
+use diesel::prelude::PgConnection;
+use diesel::r2d2::ConnectionManager;
+use r2d2;
 
 use handlers::respond_to_graphql_request;
 
@@ -15,7 +17,7 @@ pub struct ServerState {
 }
 
 pub struct AppState {
-    pub connection: PgConnection,
+    pub pool: r2d2::Pool<ConnectionManager<PgConnection>>,
     pub jwt_secret: String,
 }
 
@@ -36,12 +38,10 @@ impl App {
                 pg_user, pg_password, pg_host, pg_port, pg_database
             );
 
-            let connection = PgConnection::establish(&database_url)
-                .expect(&format!("Error connecting to {}", database_url));
-            let app_state = AppState {
-                connection,
-                jwt_secret,
-            };
+            let manager: ConnectionManager<PgConnection> = ConnectionManager::new(database_url);
+            let pool = r2d2::Pool::builder().max_size(15).build(manager).unwrap();
+
+            let app_state = AppState { pool, jwt_secret };
 
             ActixWebApp::with_state(ServerState { schema, app_state })
                 .middleware(middleware::Logger::default())
