@@ -49,7 +49,7 @@ impl User {
 
     pub fn generate_token(&self, secret: &str) -> String {
         let my_claims = Claims { id: self.id };
-        info!("secret is: {}", secret);
+
         jsonwebtoken::encode(
             &jsonwebtoken::Header::default(),
             &my_claims,

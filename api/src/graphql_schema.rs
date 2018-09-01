@@ -121,7 +121,6 @@ graphql_object!(MutationRoot: AppState |&self| {
 
         if let Some(user) = models::User::load_from_email_or_username(&email_or_username, &context.connection)? {
             if libpasta::verify_password(&user.password_hash, &password) {
-
                 let token = user.generate_token(&context.jwt_secret);
 
                 Ok(SignIn { token })
