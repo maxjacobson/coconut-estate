@@ -16,6 +16,7 @@ pub struct ServerState {
 
 pub struct AppState {
     pub connection: PgConnection,
+    pub jwt_secret: String,
 }
 
 impl App {
@@ -28,6 +29,7 @@ impl App {
             let pg_host = Self::read_env("POSTGRES_HOST");
             let pg_port = Self::read_env("POSTGRES_PORT");
             let pg_database = Self::read_env("PG_DATABASE");
+            let jwt_secret = Self::read_env("JWT_SECRET");
 
             let database_url = format!(
                 "postgres://{}:{}@{}:{}/{}",
@@ -36,7 +38,10 @@ impl App {
 
             let connection = PgConnection::establish(&database_url)
                 .expect(&format!("Error connecting to {}", database_url));
-            let app_state = AppState { connection };
+            let app_state = AppState {
+                connection,
+                jwt_secret,
+            };
 
             ActixWebApp::with_state(ServerState { schema, app_state })
                 .middleware(middleware::Logger::default())

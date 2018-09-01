@@ -6,4 +6,4 @@
 
 set -e
 
-docker-compose run --rm toolbox cargo run --quiet --package toolbox -- "$@"
+cargo run --package toolbox -- "$@"

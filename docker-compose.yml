@@ -17,6 +17,7 @@ services:
     depends_on:
       - postgres
     environment:
+      JWT_SECRET: my-superb-signing-secret
       RUST_LOG: actix_web=info,api=debug
     env_file:
       - dev.env

@@ -22,7 +22,10 @@ extern crate serde_derive;
 
 extern crate serde_json;
 
+extern crate jsonwebtoken;
+
 mod app;
+mod auth;
 mod cli;
 mod database_schema;
 mod graphql_schema;

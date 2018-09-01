@@ -3,6 +3,9 @@ use diesel::prelude::{ExpressionMethods, PgConnection, QueryDsl, QueryResult, Ru
 use diesel::result::Error as DieselError;
 use diesel::BoolExpressionMethods;
 
+use auth::Claims;
+use jsonwebtoken;
+
 #[derive(Clone, Debug, Queryable, Serialize)]
 pub struct Roadmap {
     pub id: i32,
@@ -42,5 +45,15 @@ impl User {
             Err(DieselError::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
+    }
+
+    pub fn generate_token(&self, secret: &str) -> String {
+        let my_claims = Claims { id: self.id };
+        info!("secret is: {}", secret);
+        jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &my_claims,
+            secret.as_ref(),
+        ).unwrap()
     }
 }

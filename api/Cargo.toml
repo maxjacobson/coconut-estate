@@ -27,3 +27,6 @@ juniper = "~0.9"
 
 # Password hashing
 libpasta = "0.1.0-rc1"
+
+# Tokens
+jsonwebtoken = "~4"
