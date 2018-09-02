@@ -1,18 +1,11 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::{ExpressionMethods, PgConnection, QueryDsl, QueryResult, RunQueryDsl};
-use diesel::result::Error as DieselError;
+use diesel::result::Error;
 use diesel::BoolExpressionMethods;
-
-use auth::Claims;
 use jsonwebtoken;
 
-#[derive(Clone, Debug, Queryable, Serialize)]
-pub struct Roadmap {
-    pub id: i32,
-    pub name: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-}
+use auth::Claims;
+use database_schema;
 
 #[derive(Clone, Debug, Queryable, Serialize)]
 pub struct User {
@@ -26,10 +19,16 @@ pub struct User {
 }
 
 impl User {
+    pub fn find(id: i32, connection: &PgConnection) -> Result<Self, Error> {
+        database_schema::users::table
+            .find(id)
+            .get_result(connection)
+    }
+
     pub fn load_from_email_or_username(
         email_or_username: &str,
         connection: &PgConnection,
-    ) -> Result<Option<Self>, DieselError> {
+    ) -> Result<Option<Self>, Error> {
         use database_schema::users;
 
         let user: QueryResult<User> = users::table
@@ -42,7 +41,7 @@ impl User {
 
         match user {
             Ok(user) => Ok(Some(user)),
-            Err(DieselError::NotFound) => Ok(None),
+            Err(Error::NotFound) => Ok(None),
             Err(e) => Err(e),
         }
     }

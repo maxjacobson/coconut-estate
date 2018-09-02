@@ -1,172 +1,53 @@
-use chrono::NaiveDateTime;
-use diesel::prelude::{ExpressionMethods, QueryDsl, RunQueryDsl};
-use juniper::{self, FieldError, FieldResult, RootNode};
+use juniper::{self, FieldResult, RootNode};
 
-use database_schema::{roadmaps, users};
-use diesel::dsl::insert_into;
+use graphql;
 use handlers::RequestContext;
-use libpasta;
-use models;
-
-use std;
+use mutations;
+use queries;
 
 impl juniper::Context for RequestContext {}
-
-#[derive(GraphQLObject)]
-#[graphql(description = "A plan to follow")]
-struct Roadmap {
-    created_at: NaiveDateTime,
-    id: i32,
-    name: String,
-    updated_at: NaiveDateTime,
-}
-
-#[derive(GraphQLObject)]
-#[graphql(description = "Someone following a roadmap")]
-struct User {
-    created_at: NaiveDateTime,
-    id: i32,
-    name: String,
-    email: String,
-    updated_at: NaiveDateTime,
-    username: String,
-}
-
-impl std::convert::From<models::User> for User {
-    fn from(user: models::User) -> User {
-        User {
-            created_at: user.created_at,
-            email: user.email,
-            id: user.id,
-            name: user.name,
-            updated_at: user.updated_at,
-            username: user.username,
-        }
-    }
-}
-
-#[derive(GraphQLObject)]
-#[graphql(description = "Details of a successful sign in")]
-struct SignIn {
-    token: String,
-}
 
 pub struct QueryRoot;
 
 graphql_object!(QueryRoot: RequestContext |&self| {
-    field roadmap(&executor, id: i32) -> FieldResult<Roadmap> {
-        let context = executor.context();
-        let connection = context.pool.get()?;
-
-        debug!("Looking up roadmap with id {}", id);
-
-        let roadmap: models::Roadmap = roadmaps::table.filter(roadmaps::id.eq(id)).first(&connection)?;
-
-        Ok(Roadmap{
-            created_at: roadmap.created_at,
-            id: roadmap.id,
-            name: roadmap.name,
-            updated_at: roadmap.updated_at,
-        })
+    field roadmap(&executor, id: i32) -> FieldResult<graphql::Roadmap> {
+        let connection = &executor.context().pool.get()?;
+        Ok(queries::roadmaps::find(id, connection)?)
     }
 
-    field roadmaps(&executor) -> FieldResult<Vec<Roadmap>> {
-        // TODO: consider moving as much code as possible out of macros so rustfmt can be more sure
-        // how to reformat it
-        let context = executor.context();
-        let connection = context.pool.get()?;
-
-        let roadmaps: Vec<models::Roadmap> = roadmaps::table.load(&connection)?;
-
-        Ok(roadmaps.iter().map(|roadmap| Roadmap {
-            created_at: roadmap.created_at,
-            id: roadmap.id,
-            name: roadmap.name.clone(),
-            updated_at: roadmap.updated_at,
-        }).collect())
+    field roadmaps(&executor) -> FieldResult<Vec<graphql::Roadmap>> {
+        let connection = &executor.context().pool.get()?;
+        Ok(queries::roadmaps::all(connection)?)
     }
 
-    field user(&executor) -> FieldResult<User> {
-        debug!("Attempting to look up current user");
-
+    field user(&executor) -> FieldResult<graphql::User> {
+        // TODO: plop an optional User onto the context instead of the claim?
         let context = executor.context();
-        let connection = context.pool.get()?;
-
-        let user_id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
-
-        let user: models::User = users::table.filter(users::id.eq(user_id)).first(&connection)?;
-
-        Ok(user.into())
+        let connection = &context.pool.get()?;
+        let id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
+        Ok(queries::users::find(id, connection)?)
     }
 });
 
 pub struct MutationRoot;
 
 graphql_object!(MutationRoot: RequestContext |&self| {
-    field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<User> {
-        debug!("Attempting to insert a user with name: {}, email: {}", name, email);
-
-        let context = executor.context();
-        let connection = context.pool.get()?;
-
-        let password_hash = libpasta::hash_password(&password);
-
-        let user: models::User = insert_into(users::table).values(
-            (
-                users::name.eq(name),
-                users::email.eq(email),
-                users::password_hash.eq(password_hash),
-                users::username.eq(username),
-            )
-        ).get_result(&connection)?;
-
-        Ok(user.into())
+    field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<graphql::User> {
+        let connection = &executor.context().pool.get()?;
+        Ok(mutations::users::create(name, email, password, username, connection)?)
     }
 
-    field createRoadmap(&executor, name: String) -> FieldResult<Roadmap> {
-        debug!("Attempting to insert a roadmap with name: {}", name);
-
-        let context = executor.context();
-        let connection = context.pool.get()?;
-
-        let roadmap: models::Roadmap = insert_into(roadmaps::table).
-            values(roadmaps::name.eq(&name)).get_result(&connection)?;
-
-        Ok(Roadmap{
-            created_at: roadmap.created_at,
-            id: roadmap.id,
-            name: roadmap.name,
-            updated_at: roadmap.updated_at,
-        })
+    field createRoadmap(&executor, name: String) -> FieldResult<graphql::Roadmap> {
+        let connection = &executor.context().pool.get()?;
+        Ok(mutations::roadmaps::create(name, &connection)?)
     }
 
-    field signIn(&executor, email_or_username: String, password: String) -> FieldResult<SignIn> {
-        debug!("Attempting to sign in as {}", email_or_username);
-
+    field signIn(&executor, email_or_username: String, password: String) -> FieldResult<graphql::SignIn> {
         let context = executor.context();
-        let connection = context.pool.get()?;
+        let connection = &context.pool.get()?;
+        let jwt_secret = &context.jwt_secret;
 
-        if let Some(user) = models::User::load_from_email_or_username(&email_or_username, &connection)? {
-            if libpasta::verify_password(&user.password_hash, &password) {
-                let token = user.generate_token(&context.jwt_secret);
-
-                Ok(SignIn { token })
-            } else {
-                Err(
-                    FieldError::new(
-                        "Password did not match",
-                        graphql_value!({ "sign_in": "Password did not match" }),
-                    )
-                )
-            }
-        } else {
-            Err(
-                FieldError::new(
-                    "No user found",
-                    graphql_value!({ "sign_in": "No user found" }),
-                )
-            )
-        }
+        Ok(mutations::signin::create(email_or_username, password, &connection, &jwt_secret)?)
     }
 });
 

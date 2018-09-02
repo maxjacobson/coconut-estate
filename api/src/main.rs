@@ -29,10 +29,13 @@ extern crate serde_json;
 mod app;
 mod auth;
 mod cli;
+mod database;
 mod database_schema;
+mod graphql;
 mod graphql_schema;
 mod handlers;
-mod models;
+mod mutations;
+mod queries;
 
 use cli::Api;
 
