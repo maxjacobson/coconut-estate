@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+require "pry"
+require "sinatra"
+
+dir, port = ARGV
+dir = File.expand_path(dir)
+port = port.to_i
+
+configure do
+  set :bind, "0.0.0.0"
+  set :port, port
+end
+
+index = File.read("./index.html")
+
+get "/*" do
+  path = params[:splat].first
+  pathname = Pathname.new(dir).join(path)
+
+  if pathname.file? && pathname.exist?
+    send_file pathname
+  else
+    index
+  end
+end

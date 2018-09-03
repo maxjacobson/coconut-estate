@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -ex
+
+# Because, during the normal cocurse of development, Elm exposes this "reactor"
+# UI for exploring source code, but we don't want to deploy that to production,
+# We need a way to preview the production thing locally once everything seems
+# to work right.
+#
+# So, ordinarily while developing features you should use docker-compose and
+# the "website" service, feel free to use this before deploying a change to
+# prod
+
+rm -rf deploy-artifacts/website
+mkdir -p deploy-artifacts/website
+docker-compose run --rm \
+  --volume "$(pwd)/deploy-artifacts:/deploy-artifacts" \
+  --publish 5555:5555 \
+  website \
+  bash -c "bin/optimized-build &&
+           cp index.html /deploy-artifacts/website &&
+           bin/serve-app /deploy-artifacts/website 5555"

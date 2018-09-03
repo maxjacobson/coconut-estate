@@ -5,6 +5,8 @@ volumes:
   rust_registry:
   rust_target:
   secrets_location:
+  website_elm_stuff:
+  website_root_elm_stuff:
 
 services:
   api:
@@ -26,6 +28,21 @@ services:
       - ./:/rust-monorepo
       - rust_target:/rust-monorepo/target
       - rust_target:/root/.cargo/registry
+
+  website:
+    build:
+      context: ./
+      dockerfile: docker-helpers/elm/Dockerfile
+    command: elm reactor --port=5000
+    env_file:
+      - dev.env
+    image: coconut-estate/elm
+    ports:
+      - 5000:5000
+    volumes:
+      - ./website:/elm-code
+      - website_elm_stuff:/elm-code/elm-stuff
+      - website_root_elm_stuff:/root/.elm
 
   postgres:
     command: "-c 'log_statement=all'"
