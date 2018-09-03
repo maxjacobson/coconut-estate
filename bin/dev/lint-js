@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -ex
-
-cd website && npm run lint:js
