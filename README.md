@@ -4,7 +4,8 @@
 
 * Install Rust 1.28+ <https://rustup.rs/>
 * Install Terraform
-* Install npm
+* Install elm 0.19.0
+* Install elm-format 0.8.0 for elm 0.19.0
 * Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
 * Install [cheapskate-ci](https://github.com/maxjacobson/cheapskate-ci)
 
@@ -49,7 +50,6 @@ Running `bin/dev/delint` will fix most issues surfaced there.
 
 - For Rust code: follow `rustfmt` (in `bin/dev/lint`)
 - For Terraform code, follow `terraform fmt` (in `bin/dev/lint`)
-- For JavaScript, I like Standard and I'd like to return it, but I'm new to ember and for now I'm following their conventions, which is a particular ember-specific eslint configuration (in `bin/dev/lint`)
 - For Markdown: don't hard-wrap text at any particular column.
   Instead, do one line per sentence.
   It feels and looks weird at first and then it's _omg so nice_ to not have to rewrap paragraphs when tweaking stuff you wrote before.
@@ -67,7 +67,7 @@ Running `bin/dev/delint` will fix most issues surfaced there.
 
 I like the number 5, so all of the local things are running on ports that start with 5000 and go up:
 
-- `localhost:5000` - website (ember app)
+- ~~`localhost:5000` - website (coming back soon)~~
 - `localhost:5001` - api
 - `localhost:5002` - secrets-keeper
 - `localhost:5003` - postgres

@@ -5,8 +5,6 @@ volumes:
   rust_registry:
   rust_target:
   secrets_location:
-  website_node_modules:
-  website_tmp:
 
 services:
   api:
@@ -28,23 +26,6 @@ services:
       - ./:/rust-monorepo
       - rust_target:/rust-monorepo/target
       - rust_target:/root/.cargo/registry
-
-  website:
-    build:
-      context: ./
-      dockerfile: docker-helpers/node/Dockerfile
-    command: npx ember server
-    depends_on:
-      - api
-    env_file:
-      - dev.env
-    image: coconut-estate/node
-    ports:
-      - 5000:5000
-    volumes:
-      - ./website:/node-code
-      - website_node_modules:/node-code/node_modules
-      - website_tmp:/node-code/tmp
 
   postgres:
     command: "-c 'log_statement=all'"

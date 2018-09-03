@@ -1,8 +1,0 @@
-query {
-  roadmaps {
-    id
-    name
-    createdAt
-    updatedAt
-  }
-}
