@@ -4,4 +4,4 @@ set -e
 
 cargo fmt --all
 terraform fmt -write=true -list=false terraform
-cd website && npm run lint:js -- --fix
+elm-format --upgrade --yes website

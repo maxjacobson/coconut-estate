@@ -1,8 +1,0 @@
-query GetRoadmap($id: Int!) {
-  roadmap(id: $id) {
-    id
-    name
-    createdAt
-    updatedAt
-  }
-}

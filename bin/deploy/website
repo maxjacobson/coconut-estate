@@ -2,13 +2,16 @@
 
 set -ex
 
+rm -rf deploy-artifacts/website
 mkdir -p deploy-artifacts/website
 docker-compose run --rm \
-  --volume "$(pwd)/deploy-artifacts/website/dist:/node-code/dist" \
-  website npx ember build --environment=production
+  --volume "$(pwd)/deploy-artifacts:/deploy-artifacts" \
+  website \
+  bash -c "bin/optimized-build &&
+           cp index.html /deploy-artifacts/website"
 
-bin/scp -r deploy-artifacts/website/dist \
-  www.coconutestate.top:/mnt/website/website-new
+bin/scp -r deploy-artifacts/website \
+    www.coconutestate.top:/mnt/website/website-new
 
 bin/ssh www.coconutestate.top rm -rf /mnt/website/website
 bin/ssh www.coconutestate.top mv /mnt/website/website-new /mnt/website/website

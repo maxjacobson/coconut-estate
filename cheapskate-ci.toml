@@ -1,10 +1,9 @@
 [ci]
 steps = [
+  "elm-format --validate website",
   "cargo fmt --all -- --check",
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
-  "bin/dev/lint-js",
   "cargo check --quiet --all",
-  "bin/dev/test-js",
 ]
 
 [github]

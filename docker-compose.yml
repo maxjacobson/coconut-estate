@@ -5,8 +5,8 @@ volumes:
   rust_registry:
   rust_target:
   secrets_location:
-  website_node_modules:
-  website_tmp:
+  website_elm_stuff:
+  website_root_elm_stuff:
 
 services:
   api:
@@ -32,19 +32,17 @@ services:
   website:
     build:
       context: ./
-      dockerfile: docker-helpers/node/Dockerfile
-    command: npx ember server
-    depends_on:
-      - api
+      dockerfile: docker-helpers/elm/Dockerfile
+    command: elm reactor --port=5000
     env_file:
       - dev.env
-    image: coconut-estate/node
+    image: coconut-estate/elm
     ports:
       - 5000:5000
     volumes:
-      - ./website:/node-code
-      - website_node_modules:/node-code/node_modules
-      - website_tmp:/node-code/tmp
+      - ./website:/elm-code
+      - website_elm_stuff:/elm-code/elm-stuff
+      - website_root_elm_stuff:/root/.elm
 
   postgres:
     command: "-c 'log_statement=all'"
