@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -ex
+
+rm -rf deploy-artifacts/website
+mkdir -p deploy-artifacts/website
+docker-compose run --rm \
+  --volume "$(pwd)/deploy-artifacts/website:/elm-code/build" \
+  website elm-app build
+
+bin/scp -r deploy-artifacts/website \
+    www.coconutestate.top:/mnt/website/website-new
+
+bin/ssh www.coconutestate.top rm -rf /mnt/website/website
+bin/ssh www.coconutestate.top mv /mnt/website/website-new /mnt/website/website
