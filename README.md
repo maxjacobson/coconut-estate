@@ -4,6 +4,8 @@
 
 * Install Rust 1.28+ <https://rustup.rs/>
 * Install Terraform
+* Install elm 0.19.0
+* Install elm-format 0.8.0 for elm 0.19.0
 * Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
 * Install [cheapskate-ci](https://github.com/maxjacobson/cheapskate-ci)
 

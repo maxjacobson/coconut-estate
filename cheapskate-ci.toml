@@ -3,6 +3,7 @@ steps = [
   "cargo fmt --all -- --check",
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
   "cargo check --quiet --all",
+  "elm-format --validate website",
 ]
 
 [github]

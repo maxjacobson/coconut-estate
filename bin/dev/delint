@@ -4,3 +4,4 @@ set -e
 
 cargo fmt --all
 terraform fmt -write=true -list=false terraform
+elm-format --upgrade --yes website
