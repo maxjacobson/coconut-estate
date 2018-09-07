@@ -119,37 +119,30 @@ view model =
     { title = Copy.title
     , body =
         [ div [ style "max-width" "640px", style "margin" "0 auto", style "padding" "10px" ]
-            [ case model.user of
-                Just user ->
-                    text ("Welcome " ++ user.username)
-
-                Nothing ->
-                    text "Sign in?"
-            , h1 []
-                [ a [ href "/" ] [ text Copy.title ]
-                ]
+            [ renderSignin model
+            , renderTitle model
             , renderBody model
-            , ul [ style "border-top" "1px solid black", style "list-style-type" "none", style "padding" "0" ]
-                [ footerLink "/" "roadmaps" Roadmaps model.route
-                , footerLink "/about" "about" About model.route
-                , footerLink "/contact" "contact" Contact model.route
-                ]
+            , renderFooter model
             ]
         ]
     }
 
 
-footerLink : String -> String -> Route -> Route -> Html msg
-footerLink path linkText targetRoute currentRoute =
-    let
-        anchorClass =
-            if targetRoute == currentRoute then
-                "active"
+renderSignin : Model -> Html msg
+renderSignin model =
+    div [ class "sign-in" ]
+        [ case model.user of
+            Just user ->
+                text ("Welcome " ++ user.username)
 
-            else
-                ""
-    in
-    li [ style "display" "inline", style "margin-right" "5px" ] [ a [ href path, class anchorClass ] [ text linkText ] ]
+            Nothing ->
+                text "Sign in?"
+        ]
+
+
+renderTitle : Model -> Html msg
+renderTitle model =
+    h1 [] [ a [ href "/" ] [ text Copy.title ] ]
 
 
 renderBody : Model -> Html msg
@@ -166,3 +159,25 @@ renderBody model =
 
         Unknown ->
             div [] [ text "Unknown page!" ]
+
+
+renderFooter : Model -> Html msg
+renderFooter model =
+    ul [ style "border-top" "1px solid black", style "list-style-type" "none", style "padding" "0" ]
+        [ footerLink "/" "roadmaps" Roadmaps model.route
+        , footerLink "/about" "about" About model.route
+        , footerLink "/contact" "contact" Contact model.route
+        ]
+
+
+footerLink : String -> String -> Route -> Route -> Html msg
+footerLink path linkText targetRoute currentRoute =
+    let
+        anchorClass =
+            if targetRoute == currentRoute then
+                "active"
+
+            else
+                ""
+    in
+    li [ style "display" "inline", style "margin-right" "5px" ] [ a [ href path, class anchorClass ] [ text linkText ] ]
