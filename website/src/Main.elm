@@ -58,12 +58,7 @@ init : Maybe String -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         route =
-            case Url.Parser.parse routeParser url of
-                Just matchingRoute ->
-                    matchingRoute
-
-                Nothing ->
-                    Unknown
+            routeFromUrl url
 
         user =
             User.load flags
