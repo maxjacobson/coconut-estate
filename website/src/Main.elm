@@ -130,18 +130,26 @@ view model =
                 ]
             , renderBody model
             , ul [ style "border-top" "1px solid black", style "list-style-type" "none", style "padding" "0" ]
-                [ footerLink "/" "roadmaps"
-                , footerLink "/about" "about"
-                , footerLink "/contact" "contact"
+                [ footerLink "/" "roadmaps" Roadmaps model.route
+                , footerLink "/about" "about" About model.route
+                , footerLink "/contact" "contact" Contact model.route
                 ]
             ]
         ]
     }
 
 
-footerLink : String -> String -> Html msg
-footerLink path linkText =
-    li [ style "display" "inline", style "margin-right" "5px" ] [ a [ href path ] [ text linkText ] ]
+footerLink : String -> String -> Route -> Route -> Html msg
+footerLink path linkText targetRoute currentRoute =
+    let
+        anchorClass =
+            if targetRoute == currentRoute then
+                "active"
+
+            else
+                ""
+    in
+    li [ style "display" "inline", style "margin-right" "5px" ] [ a [ href path, class anchorClass ] [ text linkText ] ]
 
 
 renderBody : Model -> Html msg

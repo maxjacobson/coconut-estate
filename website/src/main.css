@@ -2,3 +2,7 @@ a {
   text-decoration: none;
   color: #3B9EDB;
 }
+
+a.active {
+  font-weight: bold;
+}
