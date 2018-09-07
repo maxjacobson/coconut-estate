@@ -7,13 +7,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Url
 import Url.Parser exposing ((</>), Parser, map, oneOf, s, string, top)
+import User exposing (User)
 
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program (Maybe String) Model Msg
 main =
     Browser.application
         { init = init
@@ -49,17 +50,25 @@ type alias Model =
     { key : Browser.Navigation.Key
     , url : Url.Url
     , route : Route
+    , user : Maybe User
     }
 
 
-init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init : Maybe String -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
-    case Url.Parser.parse routeParser url of
-        Just matchingRoute ->
-            ( Model key url matchingRoute, Cmd.none )
+    let
+        route =
+            case Url.Parser.parse routeParser url of
+                Just matchingRoute ->
+                    matchingRoute
 
-        Nothing ->
-            ( Model key url Unknown, Cmd.none )
+                Nothing ->
+                    Unknown
+
+        user =
+            User.load flags
+    in
+    ( Model key url route user, Cmd.none )
 
 
 routeFromUrl url =
@@ -115,7 +124,13 @@ view model =
     { title = Copy.title
     , body =
         [ div [ style "max-width" "640px", style "margin" "0 auto", style "padding" "10px" ]
-            [ h1 []
+            [ case model.user of
+                Just user ->
+                    text ("Welcome " ++ user.username)
+
+                Nothing ->
+                    text "Sign in?"
+            , h1 []
                 [ a [ href "/" ] [ text Copy.title ]
                 ]
             , renderBody model

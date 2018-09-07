@@ -2,8 +2,15 @@ import './main.css';
 import { Elm } from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 
-Elm.Main.init({
-  node: document.getElementById('root')
+const TOKEN_KEY = "coconut-estate-token";
+
+var app = Elm.Main.init({
+  flags: window.localStorage.getItem(TOKEN_KEY),
 });
+
+// app.ports.setToken.subscribe(function(data) {
+//   console.log(data);
+//   // TODO: write to local storage
+// });
 
 registerServiceWorker();
