@@ -2,6 +2,12 @@ html {
   font-family: sans-serif;
 }
 
+.body {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
 a {
   text-decoration: none;
   color: #3B9EDB;
@@ -13,4 +19,15 @@ a.active {
 
 .sign-in {
   float: right;
+}
+
+footer ul {
+  border-top: 1px solid black;
+  list-style-type: none;
+  padding: 0;
+}
+
+footer li {
+  display: inline;
+  margin-right: 5px;
 }

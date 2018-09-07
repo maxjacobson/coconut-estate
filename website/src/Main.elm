@@ -118,7 +118,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = Copy.title
     , body =
-        [ div [ style "max-width" "640px", style "margin" "0 auto", style "padding" "10px" ]
+        [ div [ class "body" ]
             [ renderSignin model
             , renderTitle model
             , renderBody model
@@ -163,10 +163,12 @@ renderBody model =
 
 renderFooter : Model -> Html msg
 renderFooter model =
-    ul [ style "border-top" "1px solid black", style "list-style-type" "none", style "padding" "0" ]
-        [ footerLink "/" "roadmaps" Roadmaps model.route
-        , footerLink "/about" "about" About model.route
-        , footerLink "/contact" "contact" Contact model.route
+    footer []
+        [ ul []
+            [ footerLink "/" "roadmaps" Roadmaps model.route
+            , footerLink "/about" "about" About model.route
+            , footerLink "/contact" "contact" Contact model.route
+            ]
         ]
 
 
@@ -180,4 +182,4 @@ footerLink path linkText targetRoute currentRoute =
             else
                 ""
     in
-    li [ style "display" "inline", style "margin-right" "5px" ] [ a [ href path, class anchorClass ] [ text linkText ] ]
+    li [] [ a [ href path, class anchorClass ] [ text linkText ] ]
