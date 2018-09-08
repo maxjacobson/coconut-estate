@@ -152,7 +152,7 @@ update msg model =
         AttemptSignIn ->
             case model.apiUrl of
                 Just apiUrl ->
-                    ( { model | currentlySigningIn = True }
+                    ( { model | currentlySigningIn = True, signInError = Nothing }
                     , sendMutationRequest apiUrl
                         (signInMutationRequest model.emailOrUsername model.password)
                         |> Task.attempt ReceiveSignInResponse
@@ -263,7 +263,12 @@ viewBody model =
                     ]
                 , case model.signInError of
                     Just e ->
-                        text "Some error huh"
+                        case e of
+                            GraphQLClient.HttpError details ->
+                                text "Something went wrong with the request. Try again?"
+
+                            GraphQLClient.GraphQLError details ->
+                                ul [] (List.map (\detail -> li [] [ text detail.message ]) details)
 
                     Nothing ->
                         text ""
