@@ -8,6 +8,7 @@ type Route
     = Roadmaps
     | About
     | Contact
+    | SignInPage
     | Unknown
 
 
@@ -31,4 +32,5 @@ parse =
         [ Url.Parser.map Roadmaps top
         , Url.Parser.map About (s "about")
         , Url.Parser.map Contact (s "contact")
+        , Url.Parser.map SignInPage (s "sign-in")
         ]

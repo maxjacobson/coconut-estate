@@ -4,13 +4,17 @@ import registerServiceWorker from './registerServiceWorker';
 
 const TOKEN_KEY = "coconut-estate-token";
 
+var flags = {
+  currentUserToken: window.localStorage.getItem(TOKEN_KEY),
+  apiUrl: process.env.ELM_APP_API_URL,
+};
+
 var app = Elm.Main.init({
-  flags: window.localStorage.getItem(TOKEN_KEY),
+  flags,
 });
 
-// app.ports.setToken.subscribe(function(data) {
-//   console.log(data);
-//   // TODO: write to local storage
-// });
+app.ports.saveToken.subscribe(function(data) {
+  window.localStorage.setItem(TOKEN_KEY, data);
+});
 
 registerServiceWorker();

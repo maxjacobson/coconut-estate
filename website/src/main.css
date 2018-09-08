@@ -8,6 +8,10 @@ html {
   padding: 10px;
 }
 
+header h1 {
+  color: #3B9EDB;
+}
+
 a {
   text-decoration: none;
   color: #3B9EDB;
@@ -17,7 +21,7 @@ a.active {
   font-weight: bold;
 }
 
-.sign-in {
+.sign-in-cta-or-profile {
   float: right;
 }
 
@@ -30,4 +34,12 @@ footer ul {
 footer li {
   display: inline;
   margin-right: 5px;
+}
+
+.sign-in .emailOrUsername, .sign-in .password {
+  margin-right: 5px;
+}
+
+.sign-out-link {
+  margin-left: 5px;
 }

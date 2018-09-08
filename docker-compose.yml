@@ -35,6 +35,8 @@ services:
       dockerfile: docker-helpers/elm-app/Dockerfile
     command: elm-app start
     environment:
+      ELM_APP_API_URL: "http://localhost:5001/graphql"
+      ELM_DEBUGGER: "false"
       PORT: 5000
     image: coconut-estate/elm-app
     ports:

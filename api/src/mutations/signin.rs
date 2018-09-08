@@ -42,9 +42,11 @@ pub fn create(
 
             Ok(graphql::SignIn { token })
         } else {
+            debug!("{} provided a bad password", email_or_username);
             Err(CreateSignInFailure::NoMatch)
         }
     } else {
+        debug!("{} did not match a user in the database", email_or_username);
         Err(CreateSignInFailure::NoMatch)
     }
 }

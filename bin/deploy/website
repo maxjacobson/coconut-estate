@@ -6,6 +6,7 @@ rm -rf deploy-artifacts/website
 mkdir -p deploy-artifacts/website
 docker-compose run --rm \
   --volume "$(pwd)/deploy-artifacts/website:/elm-code/build" \
+  -e ELM_APP_API_URL="https://api.coconutestate.top/graphql" \
   website elm-app build
 
 bin/scp -r deploy-artifacts/website \
