@@ -17,4 +17,8 @@ app.ports.saveToken.subscribe(function(data) {
   window.localStorage.setItem(TOKEN_KEY, data);
 });
 
+app.ports.clearToken.subscribe(function(_data) {
+  window.localStorage.removeItem(TOKEN_KEY);
+});
+
 registerServiceWorker();

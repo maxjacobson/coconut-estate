@@ -124,6 +124,7 @@ type Msg
     | Password String
     | AttemptSignIn
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
+    | SignOut
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -174,6 +175,11 @@ update msg model =
                 Err e ->
                     ( { model | signInError = Just e, currentlySigningIn = False }, Cmd.none )
 
+        SignOut ->
+            ( { model | userToken = Nothing }
+            , Token.clearToken "please, friend"
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -210,7 +216,11 @@ viewSignin model =
                 Just token ->
                     div []
                         [ span [ class "profile-link" ] [ text "Profile" ]
-                        , span [ class "sign-out-link" ] [ text "Sign out" ]
+                        , span [ class "sign-out-link" ]
+                            [ button [ onClick SignOut ]
+                                [ text "Sign out"
+                                ]
+                            ]
                         ]
 
                 Nothing ->
