@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -e
-
-cd website
-elm-app test

@@ -4,7 +4,7 @@ steps = [
   "terraform fmt -write=false -check=true -list=true -diff=true terraform",
   "cargo check --quiet --all",
   "elm-format --validate website",
-  "bin/dev/test-elm",
+  "docker-compose run --rm website elm-app test",
 ]
 
 [github]
