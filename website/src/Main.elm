@@ -14,7 +14,11 @@ import User exposing (User)
 -- MAIN
 
 
-main : Program (Maybe String) Model Msg
+type alias Flags =
+    Maybe String
+
+
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
@@ -119,17 +123,17 @@ view model =
     { title = Copy.title
     , body =
         [ div [ class "body" ]
-            [ renderSignin model
-            , renderTitle model
-            , renderBody model
-            , renderFooter model
+            [ viewSignin model
+            , viewTitle model
+            , viewBody model
+            , viewFooter model
             ]
         ]
     }
 
 
-renderSignin : Model -> Html msg
-renderSignin model =
+viewSignin : Model -> Html msg
+viewSignin model =
     div [ class "sign-in" ]
         [ case model.user of
             Just user ->
@@ -140,13 +144,13 @@ renderSignin model =
         ]
 
 
-renderTitle : Model -> Html msg
-renderTitle model =
+viewTitle : Model -> Html msg
+viewTitle model =
     h1 [] [ a [ href "/" ] [ text Copy.title ] ]
 
 
-renderBody : Model -> Html msg
-renderBody model =
+viewBody : Model -> Html msg
+viewBody model =
     case model.route of
         About ->
             div [] [ text "The place to go when you're not sure where to even start." ]
@@ -161,8 +165,8 @@ renderBody model =
             div [] [ text "Unknown page!" ]
 
 
-renderFooter : Model -> Html msg
-renderFooter model =
+viewFooter : Model -> Html msg
+viewFooter model =
     footer []
         [ ul []
             [ footerLink "/" "roadmaps" Roadmaps model.route
