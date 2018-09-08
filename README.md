@@ -7,7 +7,7 @@
 * Install elm 0.19.0
 * Install elm-format 0.8.0 for elm 0.19.0
 * Install create-elm-app@2.0.3 to get the `elm-app` binary
-* Install docker (used to run PostgreSQL locally and to build cross-compiled binaries for production)
+* Install docker (used to run the full set of services locally and to build cross-compiled binaries for production)
 * Install [cheapskate-ci](https://github.com/maxjacobson/cheapskate-ci)
 
 ## Deploying to production
