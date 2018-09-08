@@ -5,8 +5,8 @@ import Browser.Navigation
 import Copy
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Router exposing (Route(..))
 import Url
-import Url.Parser exposing ((</>), Parser, map, oneOf, s, string, top)
 import User exposing (User)
 
 
@@ -30,22 +30,6 @@ main =
         }
 
 
-type Route
-    = Roadmaps
-    | About
-    | Contact
-    | Unknown
-
-
-routeParser : Parser (Route -> a) a
-routeParser =
-    oneOf
-        [ map Roadmaps top
-        , map About (s "about")
-        , map Contact (s "contact")
-        ]
-
-
 
 -- MODEL
 
@@ -62,21 +46,12 @@ init : Maybe String -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         route =
-            routeFromUrl url
+            Router.fromUrl url
 
         user =
             User.load flags
     in
     ( Model key url route user, Cmd.none )
-
-
-routeFromUrl url =
-    case Url.Parser.parse routeParser url of
-        Just matchingRoute ->
-            matchingRoute
-
-        Nothing ->
-            Unknown
 
 
 
@@ -100,7 +75,7 @@ update msg model =
                     ( model, Browser.Navigation.load href )
 
         UrlChanged url ->
-            ( { model | url = url, route = routeFromUrl url }
+            ( { model | url = url, route = Router.fromUrl url }
             , Cmd.none
             )
 
@@ -152,16 +127,16 @@ viewTitle model =
 viewBody : Model -> Html msg
 viewBody model =
     case model.route of
-        About ->
+        Router.About ->
             div [] [ text "The place to go when you're not sure where to even start." ]
 
-        Contact ->
+        Router.Contact ->
             div [] [ text "Please feel free to be in touch." ]
 
-        Roadmaps ->
+        Router.Roadmaps ->
             div [] [ text "TODO: load roadmaps from the API and display them here." ]
 
-        Unknown ->
+        Router.Unknown ->
             div [] [ text "Unknown page!" ]
 
 
@@ -169,9 +144,9 @@ viewFooter : Model -> Html msg
 viewFooter model =
     footer []
         [ ul []
-            [ footerLink "/" "roadmaps" Roadmaps model.route
-            , footerLink "/about" "about" About model.route
-            , footerLink "/contact" "contact" Contact model.route
+            [ footerLink "/" "roadmaps" Router.Roadmaps model.route
+            , footerLink "/about" "about" Router.About model.route
+            , footerLink "/contact" "contact" Router.Contact model.route
             ]
         ]
 
