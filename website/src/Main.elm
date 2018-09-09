@@ -248,8 +248,15 @@ viewBody model =
             div [] [ text "The place to go when you're not sure where to even start." ]
 
         Router.Contact ->
-            -- TODO: add some actual contact details, or maybe combine it into the about page.
-            div [] [ text "Please feel free to be in touch." ]
+            div []
+                [ p []
+                    [ span [] [ text "Please feel free to be in touch. You can follow me at " ]
+                    , a [ href "https://twitter.com/maxjacobson" ] [ text "@maxjacobson" ]
+                    , span [] [ text " or the project at " ]
+                    , a [ href "https://twitter.com/coconut_estate" ] [ text "@coconut_estate" ]
+                    , span [] [ text "." ]
+                    ]
+                ]
 
         Router.Roadmaps ->
             div [] [ text "TODO: load roadmaps from the API and display them here." ]
