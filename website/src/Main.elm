@@ -111,7 +111,7 @@ update msg model =
                     Router.fromUrl url
 
                 resetModel =
-                    { model | url = url, route = route, emailOrUsername = "", password = "", signInError = Nothing }
+                    { model | url = url, route = route, emailOrUsername = "", password = "", signInError = Nothing, profileLoadingError = Nothing }
 
                 cmd =
                     cmdForRoute route model
