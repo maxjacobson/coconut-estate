@@ -165,7 +165,10 @@ update msg model =
 
         SignOut ->
             ( { model | userToken = Nothing }
-            , Token.clearToken "please, friend"
+            , Cmd.batch
+                [ Token.clearToken "please, friend"
+                , Browser.Navigation.pushUrl model.key "/sign-in"
+                ]
             )
 
 
