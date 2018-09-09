@@ -14,7 +14,6 @@ import Router exposing (Route(..))
 import Task exposing (Task)
 import Token
 import Url
-import User exposing (User)
 
 
 
