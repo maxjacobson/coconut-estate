@@ -20,6 +20,9 @@ title route =
                 SignInPage ->
                     "sign-in"
 
+                Profile ->
+                    "profile"
+
                 Unknown ->
                     "???"
     in

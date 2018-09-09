@@ -1,4 +1,5 @@
 use juniper::{self, FieldResult, RootNode};
+use std::convert::From;
 
 use graphql;
 use handlers::RequestContext;
@@ -6,6 +7,17 @@ use mutations;
 use queries;
 
 impl juniper::Context for RequestContext {}
+
+struct MissingClaims;
+
+impl From<MissingClaims> for juniper::FieldError {
+    fn from(_e: MissingClaims) -> juniper::FieldError {
+        juniper::FieldError::new(
+            "Can't access this resource without providing a token",
+            juniper::Value::null(),
+        )
+    }
+}
 
 pub struct QueryRoot;
 
@@ -24,7 +36,12 @@ graphql_object!(QueryRoot: RequestContext |&self| {
         // TODO: plop an optional User onto the context instead of the claim?
         let context = executor.context();
         let connection = &context.pool.get()?;
-        let id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
+        let id = match context.claims.as_ref() {
+            Some(claims) => claims.id,
+            None => Err(MissingClaims)?,
+        };
+
+        // let id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
         Ok(queries::users::find(id, connection)?)
     }
 });

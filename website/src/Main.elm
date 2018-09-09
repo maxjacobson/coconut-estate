@@ -1,12 +1,12 @@
 module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, update, view)
 
+import Api.Mutations.SignIn
+import Api.Queries.Profile
+import Api.Sender
 import Browser
 import Browser.Navigation
 import Copy
 import GraphQL.Client.Http as GraphQLClient
-import GraphQL.Request.Builder exposing (..)
-import GraphQL.Request.Builder.Arg as Arg
-import GraphQL.Request.Builder.Variable as Var
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -21,50 +21,8 @@ import User exposing (User)
 -- MAIN
 
 
-type alias SignInVars =
-    { emailOrUsername : String, password : String }
-
-
-signInMutation : Document Mutation String SignInVars
-signInMutation =
-    let
-        emailOrUsernameVar =
-            Var.required "emailOrUsername" .emailOrUsername Var.string
-
-        passwordVar =
-            Var.required "password" .password Var.string
-    in
-    mutationDocument <|
-        extract
-            (field "signIn"
-                [ ( "emailOrUsername", Arg.variable emailOrUsernameVar )
-                , ( "password", Arg.variable passwordVar )
-                ]
-                (extract (field "token" [] string))
-            )
-
-
-signInMutationRequest : String -> String -> Request Mutation String
-signInMutationRequest emailOrUsername password =
-    signInMutation
-        |> request { emailOrUsername = emailOrUsername, password = password }
-
-
-
--- type alias SignInResponse =
-
-
-sendMutationRequest : Url.Url -> Request Mutation a -> Task GraphQLClient.Error a
-sendMutationRequest apiUrl request =
-    GraphQLClient.sendMutation (Url.toString apiUrl) request
-
-
-type alias UserToken =
-    Maybe String
-
-
 type alias Flags =
-    { currentUserToken : UserToken, apiUrl : String }
+    { currentUserToken : Token.UserToken, apiUrl : String }
 
 
 main : Program Flags Model Msg
@@ -87,12 +45,14 @@ type alias Model =
     { key : Browser.Navigation.Key
     , url : Url.Url
     , route : Route
-    , userToken : UserToken
+    , userToken : Token.UserToken
     , apiUrl : Maybe Url.Url
     , emailOrUsername : String
     , password : String
     , signInError : Maybe GraphQLClient.Error
     , currentlySigningIn : Bool
+    , profileDetails : Maybe Api.Queries.Profile.Profile
+    , profileLoadingError : Maybe GraphQLClient.Error
     }
 
 
@@ -109,8 +69,14 @@ init flags url key =
 
         apiUrl =
             Url.fromString flags.apiUrl
+
+        cmd =
+            cmdForRoute route model
+
+        model =
+            Model key url route flags.currentUserToken apiUrl "" "" Nothing False Nothing Nothing
     in
-    ( Model key url route flags.currentUserToken apiUrl "" "" Nothing False, Cmd.none )
+    ( model, cmd )
 
 
 
@@ -123,6 +89,7 @@ type Msg
     | EmailOrUsername String
     | Password String
     | AttemptSignIn
+    | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
     | SignOut
 
@@ -139,9 +106,18 @@ update msg model =
                     ( model, Browser.Navigation.load href )
 
         UrlChanged url ->
-            -- reset things
-            ( { model | url = url, route = Router.fromUrl url, emailOrUsername = "", password = "", signInError = Nothing }
-            , Cmd.none
+            let
+                route =
+                    Router.fromUrl url
+
+                resetModel =
+                    { model | url = url, route = route, emailOrUsername = "", password = "", signInError = Nothing }
+
+                cmd =
+                    cmdForRoute route model
+            in
+            ( resetModel
+            , cmd
             )
 
         EmailOrUsername val ->
@@ -151,16 +127,28 @@ update msg model =
             ( { model | password = val }, Cmd.none )
 
         AttemptSignIn ->
-            case model.apiUrl of
-                Just apiUrl ->
-                    ( { model | currentlySigningIn = True, signInError = Nothing }
-                    , sendMutationRequest apiUrl
-                        (signInMutationRequest model.emailOrUsername model.password)
-                        |> Task.attempt ReceiveSignInResponse
-                    )
+            let
+                updatedModel =
+                    { model | currentlySigningIn = True, signInError = Nothing }
 
-                Nothing ->
-                    ( model, Browser.Navigation.pushUrl model.key "/no-api-url-sorry" )
+                cmd =
+                    withApiUrl model
+                        (\apiUrl ->
+                            Api.Sender.sendMutationRequest apiUrl
+                                model.userToken
+                                (Api.Mutations.SignIn.buildRequest model.emailOrUsername model.password)
+                                |> Task.attempt ReceiveSignInResponse
+                        )
+            in
+            ( updatedModel, cmd )
+
+        ReceiveProfileResponse result ->
+            case result of
+                Ok profile ->
+                    ( { model | profileDetails = Just profile }, Cmd.none )
+
+                Err e ->
+                    ( { model | profileLoadingError = Just e }, Cmd.none )
 
         ReceiveSignInResponse result ->
             case result of
@@ -215,7 +203,11 @@ viewSignin model =
             [ case model.userToken of
                 Just token ->
                     div []
-                        [ span [ class "profile-link" ] [ text "Profile" ]
+                        [ span [ class "profile-link" ]
+                            [ a [ href "/profile", class (routeActiveHtmlClass Router.Profile model.route) ]
+                                [ text "Profile"
+                                ]
+                            ]
                         , span [ class "sign-out-link" ]
                             [ button [ onClick SignOut ]
                                 [ text "Sign out"
@@ -253,6 +245,7 @@ viewBody model =
             div [] [ text "The place to go when you're not sure where to even start." ]
 
         Router.Contact ->
+            -- TODO: add some actual contact details, or maybe combine it into the about page.
             div [] [ text "Please feel free to be in touch." ]
 
         Router.Roadmaps ->
@@ -273,15 +266,29 @@ viewBody model =
                     ]
                 , case model.signInError of
                     Just e ->
-                        case e of
-                            GraphQLClient.HttpError details ->
-                                text "Something went wrong with the request. Try again?"
-
-                            GraphQLClient.GraphQLError details ->
-                                ul [] (List.map (\detail -> li [] [ text detail.message ]) details)
+                        viewGraphQLError e
 
                     Nothing ->
                         text ""
+                ]
+
+        Router.Profile ->
+            div []
+                [ case model.profileDetails of
+                    Just details ->
+                        div [ class "profile-details" ]
+                            [ p []
+                                [ text ("Welcome, " ++ details.name)
+                                ]
+                            ]
+
+                    Nothing ->
+                        case model.profileLoadingError of
+                            Just e ->
+                                viewGraphQLError e
+
+                            Nothing ->
+                                text "Loading..."
                 ]
 
         Router.Unknown ->
@@ -303,15 +310,55 @@ footerLink : String -> String -> Route -> Route -> Html Msg
 footerLink path linkText targetRoute currentRoute =
     let
         anchorClass =
-            if targetRoute == currentRoute then
-                "active"
-
-            else
-                ""
+            routeActiveHtmlClass targetRoute currentRoute
     in
     li [] [ a [ href path, class anchorClass ] [ text linkText ] ]
+
+
+routeActiveHtmlClass : Route -> Route -> String
+routeActiveHtmlClass targetRoute currentRoute =
+    if targetRoute == currentRoute then
+        "active"
+
+    else
+        ""
 
 
 cannotAttemptSignIn : Model -> Bool
 cannotAttemptSignIn model =
     model.emailOrUsername == "" || model.password == "" || model.currentlySigningIn == True
+
+
+withApiUrl : Model -> (Url.Url -> Cmd Msg) -> Cmd Msg
+withApiUrl model callback =
+    case model.apiUrl of
+        Just apiUrl ->
+            callback apiUrl
+
+        Nothing ->
+            Browser.Navigation.pushUrl model.key "/no-api-url-sorry"
+
+
+viewGraphQLError e =
+    case e of
+        GraphQLClient.HttpError details ->
+            text "Something went wrong with the request. Try again?"
+
+        GraphQLClient.GraphQLError details ->
+            ul [] (List.map (\detail -> li [] [ text detail.message ]) details)
+
+
+cmdForRoute : Route -> Model -> Cmd Msg
+cmdForRoute route model =
+    case route of
+        Router.Profile ->
+            withApiUrl model
+                (\apiUrl ->
+                    Api.Sender.sendQueryRequest apiUrl
+                        model.userToken
+                        Api.Queries.Profile.buildRequest
+                        |> Task.attempt ReceiveProfileResponse
+                )
+
+        _ ->
+            Cmd.none

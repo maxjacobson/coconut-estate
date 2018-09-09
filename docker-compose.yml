@@ -18,6 +18,7 @@ services:
       - postgres
     environment:
       JWT_SECRET: my-superb-signing-secret
+      RUST_BACKTRACE: "1"
       RUST_LOG: actix_web=info,api=debug
     env_file:
       - dev.env
