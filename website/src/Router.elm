@@ -9,6 +9,7 @@ type Route
     | About
     | Contact
     | SignInPage
+    | SignUpPage
     | Profile
     | Unknown
 
@@ -34,5 +35,6 @@ parse =
         , Url.Parser.map About (s "about")
         , Url.Parser.map Contact (s "contact")
         , Url.Parser.map SignInPage (s "sign-in")
+        , Url.Parser.map SignUpPage (s "sign-up")
         , Url.Parser.map Profile (s "profile")
         ]

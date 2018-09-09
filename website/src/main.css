@@ -36,10 +36,15 @@ footer li {
   margin-right: 5px;
 }
 
-.sign-in .emailOrUsername, .sign-in .password {
+.sign-in .emailOrUsername, .email, .sign-in .password {
   margin-right: 5px;
 }
 
-.sign-out-link {
+.sign-out-link, .sign-up-link {
   margin-left: 5px;
+}
+
+.sign-up input {
+  display: block;
+  margin-top: 5px;
 }

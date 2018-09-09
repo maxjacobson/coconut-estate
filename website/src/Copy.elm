@@ -20,6 +20,9 @@ title route =
                 SignInPage ->
                     "sign-in"
 
+                SignUpPage ->
+                    "sign-up"
+
                 Profile ->
                     "profile"
 

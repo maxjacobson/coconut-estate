@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, update, view)
 
 import Api.Mutations.SignIn
+import Api.Mutations.SignUp
 import Api.Queries.Profile
 import Api.Queries.Roadmaps
 import Api.Sender
@@ -15,6 +16,12 @@ import Router exposing (Route(..))
 import Task exposing (Task)
 import Token
 import Url
+import Views.Contact
+import Views.Helpers
+import Views.Profile
+import Views.RoadmapsList
+import Views.SignIn
+import Views.SignUp
 
 
 
@@ -47,10 +54,16 @@ type alias Model =
     , route : Route
     , userToken : Token.UserToken
     , apiUrl : String
-    , emailOrUsername : String
-    , password : String
+    , signInEmailOrUsername : String
+    , signInPassword : String
     , signInError : Maybe GraphQLClient.Error
     , currentlySigningIn : Bool
+    , signUpEmail : String
+    , signUpName : String
+    , signUpPassword : String
+    , signUpUsername : String
+    , signUpError : Maybe GraphQLClient.Error
+    , currentlySigningUp : Bool
     , profileDetails : Maybe (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     , roadmapsList : Maybe (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
     }
@@ -73,10 +86,16 @@ init flags url key =
             , route = route
             , userToken = flags.currentUserToken
             , apiUrl = flags.apiUrl
-            , emailOrUsername = ""
-            , password = ""
+            , signInEmailOrUsername = ""
+            , signInPassword = ""
             , signInError = Nothing
             , currentlySigningIn = False
+            , signUpEmail = ""
+            , signUpName = ""
+            , signUpPassword = ""
+            , signUpUsername = ""
+            , signUpError = Nothing
+            , currentlySigningUp = False
             , profileDetails = Nothing
             , roadmapsList = Nothing
             }
@@ -94,12 +113,18 @@ init flags url key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | EmailOrUsername String
-    | Password String
     | AttemptSignIn
+    | AttemptSignUp
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
+    | ReceiveSignUpResponse (Result GraphQLClient.Error Api.Mutations.SignUp.SignedUpUser)
     | ReceiveRoadmapsListResponse (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
+    | SignInEmailOrUsername String
+    | SignInPassword String
+    | SignUpEmail String
+    | SignUpName String
+    | SignUpPassword String
+    | SignUpUsername String
     | SignOut
 
 
@@ -123,11 +148,16 @@ update msg model =
                     { model
                         | url = url
                         , route = route
-                        , emailOrUsername = ""
-                        , password = ""
+                        , signInEmailOrUsername = ""
+                        , signInPassword = ""
                         , signInError = Nothing
                         , roadmapsList = Nothing
                         , profileDetails = Nothing
+                        , signUpEmail = ""
+                        , signUpName = ""
+                        , signUpPassword = ""
+                        , signUpUsername = ""
+                        , signUpError = Nothing
                     }
 
                 cmd =
@@ -137,11 +167,11 @@ update msg model =
             , cmd
             )
 
-        EmailOrUsername val ->
-            ( { model | emailOrUsername = val }, Cmd.none )
+        SignInEmailOrUsername val ->
+            ( { model | signInEmailOrUsername = val }, Cmd.none )
 
-        Password val ->
-            ( { model | password = val }, Cmd.none )
+        SignInPassword val ->
+            ( { model | signInPassword = val }, Cmd.none )
 
         AttemptSignIn ->
             let
@@ -151,8 +181,21 @@ update msg model =
                 cmd =
                     Api.Sender.sendMutationRequest model.apiUrl
                         model.userToken
-                        (Api.Mutations.SignIn.buildRequest model.emailOrUsername model.password)
+                        (Api.Mutations.SignIn.buildRequest model.signInEmailOrUsername model.signInPassword)
                         |> Task.attempt ReceiveSignInResponse
+            in
+            ( updatedModel, cmd )
+
+        AttemptSignUp ->
+            let
+                updatedModel =
+                    { model | currentlySigningUp = True, signUpError = Nothing }
+
+                cmd =
+                    Api.Sender.sendMutationRequest model.apiUrl
+                        model.userToken
+                        (Api.Mutations.SignUp.buildRequest model.signUpEmail model.signUpName model.signUpUsername model.signUpPassword)
+                        |> Task.attempt ReceiveSignUpResponse
             in
             ( updatedModel, cmd )
 
@@ -174,6 +217,26 @@ update msg model =
 
         ReceiveRoadmapsListResponse result ->
             ( { model | roadmapsList = Just result }, Cmd.none )
+
+        SignUpEmail val ->
+            ( { model | signUpEmail = val }, Cmd.none )
+
+        SignUpName val ->
+            ( { model | signUpName = val }, Cmd.none )
+
+        SignUpPassword val ->
+            ( { model | signUpPassword = val }, Cmd.none )
+
+        SignUpUsername val ->
+            ( { model | signUpUsername = val }, Cmd.none )
+
+        ReceiveSignUpResponse result ->
+            case result of
+                Ok signedUpUser ->
+                    ( { model | currentlySigningUp = False }, Browser.Navigation.pushUrl model.key "/sign-in" )
+
+                Err e ->
+                    ( { model | signUpError = Just e, currentlySigningUp = False }, Cmd.none )
 
         SignOut ->
             ( { model | userToken = Nothing }
@@ -213,33 +276,34 @@ view model =
 
 viewSignin : Model -> Html Msg
 viewSignin model =
-    if not (model.route == SignInPage) then
-        div [ class "sign-in-cta-or-profile" ]
-            [ case model.userToken of
-                Just token ->
-                    div []
-                        [ span [ class "profile-link" ]
-                            [ a [ href "/profile", class (routeActiveHtmlClass Router.Profile model.route) ]
-                                [ text "Profile"
-                                ]
-                            ]
-                        , span [ class "sign-out-link" ]
-                            [ button [ onClick SignOut ]
-                                [ text "Sign out"
-                                ]
+    div [ class "sign-in-cta-or-profile" ]
+        [ case model.userToken of
+            Just token ->
+                div []
+                    [ span [ class "profile-link" ]
+                        [ a [ href "/profile", class (routeActiveHtmlClass Router.Profile model.route) ]
+                            [ text "Profile"
                             ]
                         ]
+                    , span [ class "sign-out-link" ]
+                        [ button [ onClick SignOut ]
+                            [ text "Sign out"
+                            ]
+                        ]
+                    ]
 
-                Nothing ->
-                    -- TODO: figure out a way to avoid the duplication in providing
-                    -- an href here and then the same value in the Router module
-                    a [ href "/sign-in" ]
+            Nothing ->
+                -- TODO: figure out a way to avoid the duplication in providing
+                -- an href here and then the same value in the Router module
+                div []
+                    [ a [ href "/sign-in", class "sign-in-link", class (routeActiveHtmlClass Router.SignInPage model.route) ]
                         [ text "Sign in"
                         ]
-            ]
-
-    else
-        text ""
+                    , span [] [ text ", " ]
+                    , a [ href "/sign-up", class "sign-up-link", class (routeActiveHtmlClass Router.SignUpPage model.route) ]
+                        [ text "Sign up" ]
+                    ]
+        ]
 
 
 viewTitle : Model -> Html Msg
@@ -260,77 +324,19 @@ viewBody model =
             div [] [ text "The place to go when you're not sure where to even start." ]
 
         Router.Contact ->
-            div []
-                [ p []
-                    [ span [] [ text "Please feel free to be in touch. You can follow me at " ]
-                    , a [ href "https://twitter.com/maxjacobson" ] [ text "@maxjacobson" ]
-                    , span [] [ text " or the project at " ]
-                    , a [ href "https://twitter.com/coconut_estate" ] [ text "@coconut_estate" ]
-                    , span [] [ text "." ]
-                    ]
-                ]
+            Views.Contact.view model
 
         Router.Roadmaps ->
-            div [ class "roadmaps-list" ]
-                [ h2 [] [ text "Roadmaps" ]
-                , case model.roadmapsList of
-                    Just result ->
-                        case result of
-                            Ok roadmaps ->
-                                ul []
-                                    (List.map
-                                        (\roadmap ->
-                                            li [] [ text roadmap.name ]
-                                        )
-                                        roadmaps
-                                    )
-
-                            Err e ->
-                                viewGraphQLError e
-
-                    Nothing ->
-                        text "Loading..."
-                ]
+            Views.RoadmapsList.view model
 
         Router.SignInPage ->
-            div [ class "sign-in" ]
-                [ Html.form [ onSubmit AttemptSignIn ]
-                    [ input [ class "emailOrUsername", type_ "text", placeholder "username or email", onInput EmailOrUsername, autofocus True ] []
-                    , input [ class "password", type_ "password", placeholder "password", onInput Password ] []
-                    , button [ type_ "submit", disabled (cannotAttemptSignIn model) ]
-                        [ if model.currentlySigningIn then
-                            text "Signing in..."
+            Views.SignIn.view model AttemptSignIn SignInEmailOrUsername SignInPassword
 
-                          else
-                            text "Sign in"
-                        ]
-                    ]
-                , case model.signInError of
-                    Just e ->
-                        viewGraphQLError e
-
-                    Nothing ->
-                        text ""
-                ]
+        Router.SignUpPage ->
+            Views.SignUp.view model AttemptSignUp SignUpEmail SignUpName SignUpPassword SignUpUsername
 
         Router.Profile ->
-            div []
-                [ case model.profileDetails of
-                    Just result ->
-                        case result of
-                            Ok details ->
-                                div [ class "profile-details" ]
-                                    [ p []
-                                        [ text ("Welcome, " ++ details.name)
-                                        ]
-                                    ]
-
-                            Err e ->
-                                viewGraphQLError e
-
-                    Nothing ->
-                        text "Loading..."
-                ]
+            Views.Profile.view model
 
         Router.Unknown ->
             div [] [ text "Unknown page!" ]
@@ -365,34 +371,41 @@ routeActiveHtmlClass targetRoute currentRoute =
         ""
 
 
-cannotAttemptSignIn : Model -> Bool
-cannotAttemptSignIn model =
-    model.emailOrUsername == "" || model.password == "" || model.currentlySigningIn == True
-
-
-viewGraphQLError e =
-    case e of
-        GraphQLClient.HttpError details ->
-            text "Something went wrong with the request. Try again?"
-
-        GraphQLClient.GraphQLError details ->
-            ul [] (List.map (\detail -> li [] [ text detail.message ]) details)
-
-
 cmdForRoute : Route -> Model -> Cmd Msg
 cmdForRoute route model =
     case route of
+        -- Load user profile when visiting profile page
         Router.Profile ->
             Api.Sender.sendQueryRequest model.apiUrl
                 model.userToken
                 Api.Queries.Profile.buildRequest
                 |> Task.attempt ReceiveProfileResponse
 
+        -- Load roadmaps list when visiting roadmaps list page
         Router.Roadmaps ->
             Api.Sender.sendQueryRequest model.apiUrl
                 model.userToken
                 Api.Queries.Roadmaps.buildListRequest
                 |> Task.attempt ReceiveRoadmapsListResponse
 
+        -- Redirect away if already logged in
+        Router.SignInPage ->
+            case model.userToken of
+                Just token ->
+                    Browser.Navigation.pushUrl model.key "/"
+
+                Nothing ->
+                    Cmd.none
+
+        -- Redirect away if already logged in
+        Router.SignUpPage ->
+            case model.userToken of
+                Just token ->
+                    Browser.Navigation.pushUrl model.key "/"
+
+                Nothing ->
+                    Cmd.none
+
+        -- Don't do anything special when visiting other pages
         _ ->
             Cmd.none
