@@ -2,7 +2,6 @@ module Api.Queries.Profile exposing (Profile, buildRequest)
 
 import GraphQL.Request.Builder exposing (..)
 import GraphQL.Request.Builder.Arg as Arg
-import GraphQL.Request.Builder.Variable as Var
 
 
 type alias Profile =
@@ -10,10 +9,6 @@ type alias Profile =
     , username : String
     , email : String
     }
-
-
-type alias UserVars =
-    {}
 
 
 buildRequest : Request Query Profile
@@ -25,7 +20,7 @@ buildRequest =
 -- HELPERS
 
 
-query : Document Query Profile UserVars
+query : Document Query Profile {}
 query =
     let
         user =

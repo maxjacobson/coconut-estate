@@ -5,15 +5,14 @@ import GraphQL.Request.Builder exposing (..)
 import Http
 import Task exposing (Task)
 import Token
-import Url
 
 
-sendMutationRequest : Url.Url -> Token.UserToken -> Request Mutation a -> Task GraphQLClient.Error a
+sendMutationRequest : String -> Token.UserToken -> Request Mutation a -> Task GraphQLClient.Error a
 sendMutationRequest apiUrl token request =
     GraphQLClient.customSendMutation (requestOptions apiUrl token) request
 
 
-sendQueryRequest : Url.Url -> Token.UserToken -> Request Query a -> Task GraphQLClient.Error a
+sendQueryRequest : String -> Token.UserToken -> Request Query a -> Task GraphQLClient.Error a
 sendQueryRequest apiUrl token request =
     GraphQLClient.customSendQuery (requestOptions apiUrl token) request
 
@@ -25,7 +24,7 @@ sendQueryRequest apiUrl token request =
 requestOptions apiUrl token =
     { method = "POST"
     , headers = headers token
-    , url = Url.toString apiUrl
+    , url = apiUrl
     , timeout = Nothing
     , withCredentials = False
     }

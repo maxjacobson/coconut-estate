@@ -2,6 +2,7 @@ module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, upd
 
 import Api.Mutations.SignIn
 import Api.Queries.Profile
+import Api.Queries.Roadmaps
 import Api.Sender
 import Browser
 import Browser.Navigation
@@ -45,13 +46,13 @@ type alias Model =
     , url : Url.Url
     , route : Route
     , userToken : Token.UserToken
-    , apiUrl : Maybe Url.Url
+    , apiUrl : String
     , emailOrUsername : String
     , password : String
     , signInError : Maybe GraphQLClient.Error
     , currentlySigningIn : Bool
-    , profileDetails : Maybe Api.Queries.Profile.Profile
-    , profileLoadingError : Maybe GraphQLClient.Error
+    , profileDetails : Maybe (Result GraphQLClient.Error Api.Queries.Profile.Profile)
+    , roadmapsList : Maybe (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
     }
 
 
@@ -66,14 +67,22 @@ init flags url key =
         route =
             Router.fromUrl url
 
-        apiUrl =
-            Url.fromString flags.apiUrl
+        model =
+            { key = key
+            , url = url
+            , route = route
+            , userToken = flags.currentUserToken
+            , apiUrl = flags.apiUrl
+            , emailOrUsername = ""
+            , password = ""
+            , signInError = Nothing
+            , currentlySigningIn = False
+            , profileDetails = Nothing
+            , roadmapsList = Nothing
+            }
 
         cmd =
             cmdForRoute route model
-
-        model =
-            Model key url route flags.currentUserToken apiUrl "" "" Nothing False Nothing Nothing
     in
     ( model, cmd )
 
@@ -90,6 +99,7 @@ type Msg
     | AttemptSignIn
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
+    | ReceiveRoadmapsListResponse (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
     | SignOut
 
 
@@ -110,7 +120,15 @@ update msg model =
                     Router.fromUrl url
 
                 resetModel =
-                    { model | url = url, route = route, emailOrUsername = "", password = "", signInError = Nothing, profileLoadingError = Nothing }
+                    { model
+                        | url = url
+                        , route = route
+                        , emailOrUsername = ""
+                        , password = ""
+                        , signInError = Nothing
+                        , roadmapsList = Nothing
+                        , profileDetails = Nothing
+                    }
 
                 cmd =
                     cmdForRoute route model
@@ -131,23 +149,15 @@ update msg model =
                     { model | currentlySigningIn = True, signInError = Nothing }
 
                 cmd =
-                    withApiUrl model
-                        (\apiUrl ->
-                            Api.Sender.sendMutationRequest apiUrl
-                                model.userToken
-                                (Api.Mutations.SignIn.buildRequest model.emailOrUsername model.password)
-                                |> Task.attempt ReceiveSignInResponse
-                        )
+                    Api.Sender.sendMutationRequest model.apiUrl
+                        model.userToken
+                        (Api.Mutations.SignIn.buildRequest model.emailOrUsername model.password)
+                        |> Task.attempt ReceiveSignInResponse
             in
             ( updatedModel, cmd )
 
         ReceiveProfileResponse result ->
-            case result of
-                Ok profile ->
-                    ( { model | profileDetails = Just profile }, Cmd.none )
-
-                Err e ->
-                    ( { model | profileLoadingError = Just e }, Cmd.none )
+            ( { model | profileDetails = Just result }, Cmd.none )
 
         ReceiveSignInResponse result ->
             case result of
@@ -161,6 +171,9 @@ update msg model =
 
                 Err e ->
                     ( { model | signInError = Just e, currentlySigningIn = False }, Cmd.none )
+
+        ReceiveRoadmapsListResponse result ->
+            ( { model | roadmapsList = Just result }, Cmd.none )
 
         SignOut ->
             ( { model | userToken = Nothing }
@@ -258,7 +271,26 @@ viewBody model =
                 ]
 
         Router.Roadmaps ->
-            div [] [ text "TODO: load roadmaps from the API and display them here." ]
+            div [ class "roadmaps-list" ]
+                [ h2 [] [ text "Roadmaps" ]
+                , case model.roadmapsList of
+                    Just result ->
+                        case result of
+                            Ok roadmaps ->
+                                ul []
+                                    (List.map
+                                        (\roadmap ->
+                                            li [] [ text roadmap.name ]
+                                        )
+                                        roadmaps
+                                    )
+
+                            Err e ->
+                                viewGraphQLError e
+
+                    Nothing ->
+                        text "Loading..."
+                ]
 
         Router.SignInPage ->
             div [ class "sign-in" ]
@@ -284,20 +316,20 @@ viewBody model =
         Router.Profile ->
             div []
                 [ case model.profileDetails of
-                    Just details ->
-                        div [ class "profile-details" ]
-                            [ p []
-                                [ text ("Welcome, " ++ details.name)
-                                ]
-                            ]
+                    Just result ->
+                        case result of
+                            Ok details ->
+                                div [ class "profile-details" ]
+                                    [ p []
+                                        [ text ("Welcome, " ++ details.name)
+                                        ]
+                                    ]
 
-                    Nothing ->
-                        case model.profileLoadingError of
-                            Just e ->
+                            Err e ->
                                 viewGraphQLError e
 
-                            Nothing ->
-                                text "Loading..."
+                    Nothing ->
+                        text "Loading..."
                 ]
 
         Router.Unknown ->
@@ -338,16 +370,6 @@ cannotAttemptSignIn model =
     model.emailOrUsername == "" || model.password == "" || model.currentlySigningIn == True
 
 
-withApiUrl : Model -> (Url.Url -> Cmd Msg) -> Cmd Msg
-withApiUrl model callback =
-    case model.apiUrl of
-        Just apiUrl ->
-            callback apiUrl
-
-        Nothing ->
-            Browser.Navigation.pushUrl model.key "/no-api-url-sorry"
-
-
 viewGraphQLError e =
     case e of
         GraphQLClient.HttpError details ->
@@ -361,13 +383,16 @@ cmdForRoute : Route -> Model -> Cmd Msg
 cmdForRoute route model =
     case route of
         Router.Profile ->
-            withApiUrl model
-                (\apiUrl ->
-                    Api.Sender.sendQueryRequest apiUrl
-                        model.userToken
-                        Api.Queries.Profile.buildRequest
-                        |> Task.attempt ReceiveProfileResponse
-                )
+            Api.Sender.sendQueryRequest model.apiUrl
+                model.userToken
+                Api.Queries.Profile.buildRequest
+                |> Task.attempt ReceiveProfileResponse
+
+        Router.Roadmaps ->
+            Api.Sender.sendQueryRequest model.apiUrl
+                model.userToken
+                Api.Queries.Roadmaps.buildListRequest
+                |> Task.attempt ReceiveRoadmapsListResponse
 
         _ ->
             Cmd.none
