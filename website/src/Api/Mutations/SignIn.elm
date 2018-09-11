@@ -9,10 +9,9 @@ type alias SignInVars =
     { emailOrUsername : String, password : String }
 
 
-buildRequest : String -> String -> Request Mutation String
-buildRequest emailOrUsername password =
+buildRequest signIn =
     mutation
-        |> request { emailOrUsername = emailOrUsername, password = password }
+        |> request { emailOrUsername = signIn.emailOrUsername, password = signIn.password }
 
 
 

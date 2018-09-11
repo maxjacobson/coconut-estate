@@ -1,6 +1,5 @@
 module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, update, view)
 
-import Api.Mutations.SignIn
 import Api.Mutations.SignUp
 import Api.Queries.Profile
 import Api.Queries.Roadmaps
@@ -12,6 +11,8 @@ import GraphQL.Client.Http as GraphQLClient
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Messages.SignIn
+import Models
 import Router exposing (Route(..))
 import Task exposing (Task)
 import Token
@@ -54,10 +55,7 @@ type alias Model =
     , route : Route
     , userToken : Token.UserToken
     , apiUrl : String
-    , signInEmailOrUsername : String
-    , signInPassword : String
-    , signInError : Maybe GraphQLClient.Error
-    , currentlySigningIn : Bool
+    , signIn : Models.SignIn
     , signUpEmail : String
     , signUpName : String
     , signUpPassword : String
@@ -74,7 +72,7 @@ type alias Model =
 --       have a way to redirect away
 
 
-init : Flags -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init : Flags -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd msg )
 init flags url key =
     let
         route =
@@ -86,10 +84,7 @@ init flags url key =
             , route = route
             , userToken = flags.currentUserToken
             , apiUrl = flags.apiUrl
-            , signInEmailOrUsername = ""
-            , signInPassword = ""
-            , signInError = Nothing
-            , currentlySigningIn = False
+            , signIn = Models.initSignIn
             , signUpEmail = ""
             , signUpName = ""
             , signUpPassword = ""
@@ -113,14 +108,11 @@ init flags url key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | AttemptSignIn
     | AttemptSignUp
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
-    | ReceiveSignInResponse (Result GraphQLClient.Error String)
     | ReceiveSignUpResponse (Result GraphQLClient.Error Api.Mutations.SignUp.SignedUpUser)
     | ReceiveRoadmapsListResponse (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
-    | SignInEmailOrUsername String
-    | SignInPassword String
+    | SignInMessage Messages.SignIn.SignIn
     | SignUpEmail String
     | SignUpName String
     | SignUpPassword String
@@ -128,7 +120,7 @@ type Msg
     | SignOut
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         LinkClicked urlRequest ->
@@ -148,9 +140,7 @@ update msg model =
                     { model
                         | url = url
                         , route = route
-                        , signInEmailOrUsername = ""
-                        , signInPassword = ""
-                        , signInError = Nothing
+                        , signIn = Models.initSignIn
                         , roadmapsList = Nothing
                         , profileDetails = Nothing
                         , signUpEmail = ""
@@ -167,24 +157,11 @@ update msg model =
             , cmd
             )
 
-        SignInEmailOrUsername val ->
-            ( { model | signInEmailOrUsername = val }, Cmd.none )
-
-        SignInPassword val ->
-            ( { model | signInPassword = val }, Cmd.none )
-
-        AttemptSignIn ->
-            let
-                updatedModel =
-                    { model | currentlySigningIn = True, signInError = Nothing }
-
-                cmd =
-                    Api.Sender.sendMutationRequest model.apiUrl
-                        model.userToken
-                        (Api.Mutations.SignIn.buildRequest model.signInEmailOrUsername model.signInPassword)
-                        |> Task.attempt ReceiveSignInResponse
-            in
-            ( updatedModel, cmd )
+        SignInMessage signInMsg ->
+            -- Messages.SignIn.update model signInMsg
+            case Messages.SignIn.update model signInMsg of
+                ( updatedModel, Just task ) ->
+                    ( updatedModel, task |> Task.attempt )
 
         AttemptSignUp ->
             let
@@ -201,19 +178,6 @@ update msg model =
 
         ReceiveProfileResponse result ->
             ( { model | profileDetails = Just result }, Cmd.none )
-
-        ReceiveSignInResponse result ->
-            case result of
-                Ok token ->
-                    ( { model | userToken = Just token, currentlySigningIn = False }
-                    , Cmd.batch
-                        [ Token.saveToken token
-                        , Browser.Navigation.pushUrl model.key "/"
-                        ]
-                    )
-
-                Err e ->
-                    ( { model | signInError = Just e, currentlySigningIn = False }, Cmd.none )
 
         ReceiveRoadmapsListResponse result ->
             ( { model | roadmapsList = Just result }, Cmd.none )
@@ -330,7 +294,7 @@ viewBody model =
             Views.RoadmapsList.view model
 
         Router.SignInPage ->
-            Views.SignIn.view model AttemptSignIn SignInEmailOrUsername SignInPassword
+            Views.SignIn.view model.signIn Messages.SignIn.Attempt Messages.SignIn.EmailOrUsername Messages.SignIn.Password
 
         Router.SignUpPage ->
             Views.SignUp.view model AttemptSignUp SignUpEmail SignUpName SignUpPassword SignUpUsername
@@ -371,7 +335,7 @@ routeActiveHtmlClass targetRoute currentRoute =
         ""
 
 
-cmdForRoute : Route -> Model -> Cmd Msg
+cmdForRoute : Route -> Model -> Cmd msg
 cmdForRoute route model =
     case route of
         -- Load user profile when visiting profile page
