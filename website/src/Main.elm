@@ -115,6 +115,7 @@ type Msg
     | AttemptSignUp
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
+    | ReceivePostSignUpSignInResponse (Result GraphQLClient.Error String)
     | ReceiveSignUpResponse (Result GraphQLClient.Error Api.Mutations.SignUp.SignedUpUser)
     | ReceiveRoadmapsListResponse (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
     | SignInEmailOrUsername String
@@ -223,10 +224,35 @@ update msg model =
         SignUpUsername val ->
             ( { model | signUpUsername = val }, Cmd.none )
 
+        ReceivePostSignUpSignInResponse result ->
+            case result of
+                Ok token ->
+                    ( { model | userToken = Just token, currentlySigningIn = False }
+                    , Cmd.batch
+                        [ Token.saveToken token
+                        , Browser.Navigation.pushUrl model.key "/"
+                        ]
+                    )
+
+                Err e ->
+                    ( { model | signInError = Just e, currentlySigningIn = False }
+                    , Browser.Navigation.pushUrl model.key "/sign-in"
+                    )
+
         ReceiveSignUpResponse result ->
             case result of
                 Ok signedUpUser ->
-                    ( { model | currentlySigningUp = False }, Browser.Navigation.pushUrl model.key "/sign-in" )
+                    let
+                        updatedModel =
+                            { model | currentlySigningIn = False }
+
+                        cmd =
+                            Api.Sender.sendMutationRequest model.apiUrl
+                                model.userToken
+                                (Api.Mutations.SignIn.buildRequest model.signUpEmail model.signUpPassword)
+                                |> Task.attempt ReceivePostSignUpSignInResponse
+                    in
+                    ( updatedModel, cmd )
 
                 Err e ->
                     ( { model | signUpError = Just e, currentlySigningUp = False }, Cmd.none )
