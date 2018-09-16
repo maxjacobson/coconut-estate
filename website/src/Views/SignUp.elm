@@ -6,11 +6,10 @@ import Html.Events exposing (onInput, onSubmit)
 import Views.Helpers
 
 
-view model submitEvent emailMessage nameMessage passwordMessage usernameMessage =
+view model submitEvent emailMessage passwordMessage usernameMessage =
     div [ class "sign-up" ]
         [ Html.form [ onSubmit submitEvent ]
             [ input [ class "email", type_ "text", placeholder "email", onInput emailMessage, autofocus True ] []
-            , input [ class "name", type_ "text", placeholder "name", onInput nameMessage ] []
             , input [ class "username", type_ "text", placeholder "username", onInput usernameMessage ] []
             , input [ class "password", type_ "password", placeholder "password", onInput passwordMessage ] []
             , button [ type_ "submit", disabled (cannotAttemptSignUp model) ]
@@ -36,8 +35,6 @@ view model submitEvent emailMessage nameMessage passwordMessage usernameMessage 
 
 cannotAttemptSignUp model =
     model.signUpEmail
-        == ""
-        || model.signUpName
         == ""
         || model.signUpUsername
         == ""

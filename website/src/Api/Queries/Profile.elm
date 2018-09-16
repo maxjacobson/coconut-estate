@@ -5,8 +5,7 @@ import GraphQL.Request.Builder.Arg as Arg
 
 
 type alias Profile =
-    { name : String
-    , username : String
+    { username : String
     , email : String
     }
 
@@ -25,7 +24,6 @@ query =
     let
         user =
             object Profile
-                |> with (field "name" [] string)
                 |> with (field "username" [] string)
                 |> with (field "email" [] string)
 

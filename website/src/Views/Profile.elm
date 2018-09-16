@@ -13,7 +13,7 @@ view model =
                     Ok details ->
                         div [ class "profile-details" ]
                             [ p []
-                                [ text ("Welcome, " ++ details.name)
+                                [ text ("Welcome, " ++ details.username)
                                 ]
                             ]
 

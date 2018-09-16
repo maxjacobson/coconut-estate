@@ -10,12 +10,12 @@ type alias SignedUpUser =
 
 
 type alias SignUpVars =
-    { email : String, name : String, username : String, password : String }
+    { email : String, username : String, password : String }
 
 
-buildRequest email name username password =
+buildRequest email username password =
     mutation
-        |> request { email = email, name = name, username = username, password = password }
+        |> request { email = email, username = username, password = password }
 
 
 
@@ -27,9 +27,6 @@ mutation =
     let
         emailVar =
             Var.required "email" .email Var.string
-
-        nameVar =
-            Var.required "name" .name Var.string
 
         usernameVar =
             Var.required "username" .username Var.string
@@ -45,7 +42,6 @@ mutation =
         extract
             (field "createUser"
                 [ ( "email", Arg.variable emailVar )
-                , ( "name", Arg.variable nameVar )
                 , ( "username", Arg.variable usernameVar )
                 , ( "password", Arg.variable passwordVar )
                 ]

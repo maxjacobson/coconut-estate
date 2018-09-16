@@ -59,7 +59,6 @@ type alias Model =
     , signInError : Maybe GraphQLClient.Error
     , currentlySigningIn : Bool
     , signUpEmail : String
-    , signUpName : String
     , signUpPassword : String
     , signUpUsername : String
     , signUpError : Maybe GraphQLClient.Error
@@ -91,7 +90,6 @@ init flags url key =
             , signInError = Nothing
             , currentlySigningIn = False
             , signUpEmail = ""
-            , signUpName = ""
             , signUpPassword = ""
             , signUpUsername = ""
             , signUpError = Nothing
@@ -122,7 +120,6 @@ type Msg
     | SignInEmailOrUsername String
     | SignInPassword String
     | SignUpEmail String
-    | SignUpName String
     | SignUpPassword String
     | SignUpUsername String
     | SignOut
@@ -154,7 +151,6 @@ update msg model =
                         , roadmapsList = Nothing
                         , profileDetails = Nothing
                         , signUpEmail = ""
-                        , signUpName = ""
                         , signUpPassword = ""
                         , signUpUsername = ""
                         , signUpError = Nothing
@@ -194,7 +190,7 @@ update msg model =
                 cmd =
                     Api.Sender.sendMutationRequest model.apiUrl
                         model.userToken
-                        (Api.Mutations.SignUp.buildRequest model.signUpEmail model.signUpName model.signUpUsername model.signUpPassword)
+                        (Api.Mutations.SignUp.buildRequest model.signUpEmail model.signUpUsername model.signUpPassword)
                         |> Task.attempt ReceiveSignUpResponse
             in
             ( updatedModel, cmd )
@@ -220,9 +216,6 @@ update msg model =
 
         SignUpEmail val ->
             ( { model | signUpEmail = val }, Cmd.none )
-
-        SignUpName val ->
-            ( { model | signUpName = val }, Cmd.none )
 
         SignUpPassword val ->
             ( { model | signUpPassword = val }, Cmd.none )
@@ -333,7 +326,7 @@ viewBody model =
             Views.SignIn.view model AttemptSignIn SignInEmailOrUsername SignInPassword
 
         Router.SignUpPage ->
-            Views.SignUp.view model AttemptSignUp SignUpEmail SignUpName SignUpPassword SignUpUsername
+            Views.SignUp.view model AttemptSignUp SignUpEmail SignUpPassword SignUpUsername
 
         Router.Profile ->
             Views.Profile.view model
