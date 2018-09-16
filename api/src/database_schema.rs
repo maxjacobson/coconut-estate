@@ -10,7 +10,7 @@ table! {
 table! {
     users (id) {
         id -> Int4,
-        name -> Varchar,
+        name -> Nullable<Varchar>,
         email -> Varchar,
         password_hash -> Varchar,
         created_at -> Timestamp,

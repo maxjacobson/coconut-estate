@@ -7,7 +7,7 @@ use std::convert::From;
 pub struct User {
     created_at: NaiveDateTime,
     id: i32,
-    name: String,
+    name: Option<String>,
     email: String,
     updated_at: NaiveDateTime,
     username: String,

@@ -10,7 +10,7 @@ use database_schema;
 #[derive(Clone, Debug, Queryable, Serialize)]
 pub struct User {
     pub id: i32,
-    pub name: String,
+    pub name: Option<String>,
     pub email: String,
     pub password_hash: String,
     pub created_at: NaiveDateTime,
