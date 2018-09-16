@@ -7,7 +7,6 @@ use std::convert::From;
 pub struct User {
     created_at: NaiveDateTime,
     id: i32,
-    name: Option<String>,
     email: String,
     updated_at: NaiveDateTime,
     username: String,
@@ -19,7 +18,6 @@ impl From<database::User> for User {
             created_at: user.created_at,
             email: user.email,
             id: user.id,
-            name: user.name,
             updated_at: user.updated_at,
             username: user.username,
         }

@@ -49,7 +49,7 @@ graphql_object!(QueryRoot: RequestContext |&self| {
 pub struct MutationRoot;
 
 graphql_object!(MutationRoot: RequestContext |&self| {
-    field createUser(&executor, name: Option<String>, email: String, password: String, username: String) -> FieldResult<graphql::User> {
+    field createUser(&executor, email: String, password: String, username: String) -> FieldResult<graphql::User> {
         let connection = &executor.context().pool.get()?;
         Ok(mutations::users::create(email, password, username, connection)?)
     }
