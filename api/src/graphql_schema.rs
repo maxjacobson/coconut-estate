@@ -49,9 +49,9 @@ graphql_object!(QueryRoot: RequestContext |&self| {
 pub struct MutationRoot;
 
 graphql_object!(MutationRoot: RequestContext |&self| {
-    field createUser(&executor, name: String, email: String, password: String, username: String) -> FieldResult<graphql::User> {
+    field createUser(&executor, name: Option<String>, email: String, password: String, username: String) -> FieldResult<graphql::User> {
         let connection = &executor.context().pool.get()?;
-        Ok(mutations::users::create(name, email, password, username, connection)?)
+        Ok(mutations::users::create(email, password, username, connection)?)
     }
 
     field createRoadmap(&executor, name: String) -> FieldResult<graphql::Roadmap> {

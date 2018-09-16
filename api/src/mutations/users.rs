@@ -9,22 +9,20 @@ use database_schema::users;
 use graphql;
 
 pub fn create(
-    name: String,
     email: String,
     password: String,
     username: String,
     connection: &PgConnection,
 ) -> Result<graphql::User, Error> {
     debug!(
-        "Attempting to insert a user with name: {}, email: {}",
-        name, email
+        "Attempting to insert a user with username: {}, email: {}",
+        username, email
     );
 
     let password_hash = libpasta::hash_password(&password);
 
     let user: database::User = insert_into(users::table)
         .values((
-            users::name.eq(name),
             users::email.eq(email),
             users::password_hash.eq(password_hash),
             users::username.eq(username),
