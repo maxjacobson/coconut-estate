@@ -8,7 +8,8 @@ import Views.Helpers
 
 view model submitMessage nameMessage =
     div [ class "new-roadmap" ]
-        [ Html.form [ onSubmit submitMessage ]
+        [ h2 [] [ text "New roadmap" ]
+        , Html.form [ onSubmit submitMessage ]
             [ input [ class "name", type_ "text", placeholder "name", onInput nameMessage, autofocus True ] []
             , button [ type_ "submit", disabled (cannotAttemptCreate model), class "create-roadmap-button" ]
                 [ if model.currentlyCreatingRoadmap then

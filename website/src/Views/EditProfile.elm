@@ -8,7 +8,8 @@ import Views.Helpers
 
 view model submitEvent passwordMessage =
     div [ class "edit-profile" ]
-        [ Html.form [ onSubmit submitEvent ]
+        [ h2 [] [ text "Edit profile" ]
+        , Html.form [ onSubmit submitEvent ]
             [ input [ class "password", type_ "password", placeholder "new password", onInput passwordMessage ] []
             , button [ type_ "submit", disabled (cannotAttemptEditProfile model), class "update-profile-button" ]
                 [ if model.currentlyUpdatingProfile then

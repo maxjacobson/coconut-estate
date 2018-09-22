@@ -7,7 +7,8 @@ import Views.Helpers
 
 view model =
     div []
-        [ case model.profileDetails of
+        [ h2 [] [ text "Profile" ]
+        , case model.profileDetails of
             Just result ->
                 case result of
                     Ok details ->

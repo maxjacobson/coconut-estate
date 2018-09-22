@@ -429,7 +429,12 @@ viewBody : Model -> Html Msg
 viewBody model =
     case model.route of
         Router.About ->
-            div [] [ text "The place to go when you're not sure where to even start." ]
+            div []
+                [ h2 [] [ text "About" ]
+                , p []
+                    [ text "The place to go when you're not sure where to even start."
+                    ]
+                ]
 
         Router.Contact ->
             Views.Contact.view model
