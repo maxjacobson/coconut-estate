@@ -7,6 +7,7 @@ import Url.Parser exposing ((</>), Parser, oneOf, s, string, top)
 type Route
     = Roadmaps
     | About
+    | Admin
     | Contact
     | SignInPage
     | SignUpPage
@@ -35,6 +36,7 @@ parse =
     oneOf
         [ Url.Parser.map Roadmaps top
         , Url.Parser.map About (s "about")
+        , Url.Parser.map Admin (s "admin")
         , Url.Parser.map Contact (s "contact")
         , Url.Parser.map SignInPage (s "sign-in")
         , Url.Parser.map SignUpPage (s "sign-up")
