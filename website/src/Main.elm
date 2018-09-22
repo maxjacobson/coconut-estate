@@ -390,7 +390,7 @@ viewSignin model =
             Just token ->
                 div []
                     [ span [ class "profile-link" ]
-                        [ a [ href "/profile", class (routeActiveHtmlClass Router.Profile model.route) ]
+                        [ a [ href "/profile", class (routeActiveHtmlClass [ Router.Profile, Router.EditProfile ] model.route) ]
                             [ text "Profile"
                             ]
                         ]
@@ -405,11 +405,11 @@ viewSignin model =
                 -- TODO: figure out a way to avoid the duplication in providing
                 -- an href here and then the same value in the Router module
                 div []
-                    [ a [ href "/sign-in", class "sign-in-link", class (routeActiveHtmlClass Router.SignInPage model.route) ]
+                    [ a [ href "/sign-in", class "sign-in-link", class (routeActiveHtmlClass [ Router.SignInPage ] model.route) ]
                         [ text "Sign in"
                         ]
                     , span [] [ text ", " ]
-                    , a [ href "/sign-up", class "sign-up-link", class (routeActiveHtmlClass Router.SignUpPage model.route) ]
+                    , a [ href "/sign-up", class "sign-up-link", class (routeActiveHtmlClass [ Router.SignUpPage ] model.route) ]
                         [ text "Sign up" ]
                     ]
         ]
@@ -461,25 +461,25 @@ viewFooter : Model -> Html Msg
 viewFooter model =
     footer []
         [ ul []
-            [ footerLink "/" "roadmaps" Router.Roadmaps model.route
-            , footerLink "/about" "about" Router.About model.route
-            , footerLink "/contact" "contact" Router.Contact model.route
+            [ footerLink "/" "roadmaps" [ Router.Roadmaps, Router.NewRoadmap ] model.route
+            , footerLink "/about" "about" [ Router.About ] model.route
+            , footerLink "/contact" "contact" [ Router.Contact ] model.route
             ]
         ]
 
 
-footerLink : String -> String -> Route -> Route -> Html Msg
-footerLink path linkText targetRoute currentRoute =
+footerLink : String -> String -> List Route -> Route -> Html Msg
+footerLink path linkText targetRouteFamily currentRoute =
     let
         anchorClass =
-            routeActiveHtmlClass targetRoute currentRoute
+            routeActiveHtmlClass targetRouteFamily currentRoute
     in
     li [] [ a [ href path, class anchorClass ] [ text linkText ] ]
 
 
-routeActiveHtmlClass : Route -> Route -> String
-routeActiveHtmlClass targetRoute currentRoute =
-    if targetRoute == currentRoute then
+routeActiveHtmlClass : List Route -> Route -> String
+routeActiveHtmlClass targetRouteFamily currentRoute =
+    if List.member currentRoute targetRouteFamily then
         "active"
 
     else
