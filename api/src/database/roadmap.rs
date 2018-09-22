@@ -10,6 +10,7 @@ pub struct Roadmap {
     pub name: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub author_id: i32,
 }
 
 impl Roadmap {

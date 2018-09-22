@@ -4,6 +4,7 @@ table! {
         name -> Varchar,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        author_id -> Int4,
     }
 }
 
@@ -17,5 +18,7 @@ table! {
         username -> Varchar,
     }
 }
+
+joinable!(roadmaps -> users (author_id));
 
 allow_tables_to_appear_in_same_query!(roadmaps, users,);
