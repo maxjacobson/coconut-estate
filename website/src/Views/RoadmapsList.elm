@@ -13,13 +13,18 @@ view model =
             Just result ->
                 case result of
                     Ok roadmaps ->
-                        ul []
-                            (List.map
-                                (\roadmap ->
-                                    li [] [ text roadmap.name ]
-                                )
-                                roadmaps
-                            )
+                        case roadmaps of
+                            [] ->
+                                p [] [ text "None yet!" ]
+
+                            _ ->
+                                ul []
+                                    (List.map
+                                        (\roadmap ->
+                                            li [] [ text roadmap.name ]
+                                        )
+                                        roadmaps
+                                    )
 
                     Err e ->
                         Views.Helpers.viewGraphQLError e
