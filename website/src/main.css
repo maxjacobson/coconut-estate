@@ -44,7 +44,7 @@ footer li {
   margin-left: 5px;
 }
 
-.sign-up input {
+.sign-up input, .sign-up button {
   display: block;
   margin-top: 5px;
 }
