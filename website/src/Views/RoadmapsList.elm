@@ -31,7 +31,11 @@ view model =
                         Views.Helpers.viewGraphQLError e
 
             Nothing ->
-                text "Loading..."
+                ul []
+                    [ li [] [ text "..." ]
+                    , li [] [ text "..." ]
+                    , li [] [ text "..." ]
+                    ]
         ]
 
 
