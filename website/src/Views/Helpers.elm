@@ -2,6 +2,7 @@ module Views.Helpers exposing (viewGraphQLError)
 
 import GraphQL.Client.Http as GraphQLClient
 import Html exposing (..)
+import Html.Attributes exposing (class)
 
 
 viewGraphQLError e =
@@ -10,4 +11,4 @@ viewGraphQLError e =
             text "Something went wrong with the request. Try again?"
 
         GraphQLClient.GraphQLError details ->
-            ul [] (List.map (\detail -> li [] [ text detail.message ]) details)
+            ul [ class "graphql-error-details" ] (List.map (\detail -> li [] [ text detail.message ]) details)

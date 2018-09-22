@@ -75,3 +75,7 @@ footer li {
   display: block;
   margin-top: 5px;
 }
+
+.graphql-error-details {
+  color: red;
+}
