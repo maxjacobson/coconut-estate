@@ -1,5 +1,6 @@
 module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, update, view)
 
+import Api.Mutations.CreateRoadmap
 import Api.Mutations.SignIn
 import Api.Mutations.SignUp
 import Api.Queries.Profile
@@ -18,6 +19,7 @@ import Token
 import Url
 import Views.Contact
 import Views.Helpers
+import Views.NewRoadmap
 import Views.Profile
 import Views.RoadmapsList
 import Views.SignIn
@@ -65,6 +67,9 @@ type alias Model =
     , currentlySigningUp : Bool
     , profileDetails : Maybe (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     , roadmapsList : Maybe (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
+    , createRoadmapError : Maybe GraphQLClient.Error
+    , currentlyCreatingRoadmap : Bool
+    , newRoadmapName : String
     }
 
 
@@ -96,6 +101,9 @@ init flags url key =
             , currentlySigningUp = False
             , profileDetails = Nothing
             , roadmapsList = Nothing
+            , createRoadmapError = Nothing
+            , currentlyCreatingRoadmap = False
+            , newRoadmapName = ""
             }
 
         cmd =
@@ -113,6 +121,9 @@ type Msg
     | UrlChanged Url.Url
     | AttemptSignIn
     | AttemptSignUp
+    | AttemptCreateRoadmap
+    | NewRoadmapName String
+    | ReceiveCreateRoadmapResponse (Result GraphQLClient.Error Api.Mutations.CreateRoadmap.CreatedRoadmap)
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
     | ReceivePostSignUpSignInResponse (Result GraphQLClient.Error String)
@@ -155,6 +166,9 @@ update msg model =
                         , signUpPassword = ""
                         , signUpUsername = ""
                         , signUpError = Nothing
+                        , newRoadmapName = ""
+                        , currentlyCreatingRoadmap = False
+                        , createRoadmapError = Nothing
                     }
 
                 cmd =
@@ -257,6 +271,21 @@ update msg model =
                 Err e ->
                     ( { model | signUpError = Just e, currentlySigningUp = False }, Cmd.none )
 
+        ReceiveCreateRoadmapResponse result ->
+            case result of
+                Ok createdRoadmap ->
+                    let
+                        updatedModel =
+                            { model | currentlyCreatingRoadmap = False }
+
+                        cmd =
+                            Browser.Navigation.pushUrl model.key "/"
+                    in
+                    ( updatedModel, cmd )
+
+                Err e ->
+                    ( { model | createRoadmapError = Just e, currentlyCreatingRoadmap = False }, Cmd.none )
+
         SignOut ->
             ( { model | userToken = Nothing }
             , Cmd.batch
@@ -264,6 +293,22 @@ update msg model =
                 , Browser.Navigation.pushUrl model.key "/sign-in"
                 ]
             )
+
+        AttemptCreateRoadmap ->
+            let
+                updatedModel =
+                    { model | currentlyCreatingRoadmap = True, createRoadmapError = Nothing }
+
+                cmd =
+                    Api.Sender.sendMutationRequest model.apiUrl
+                        model.userToken
+                        (Api.Mutations.CreateRoadmap.buildRequest model.newRoadmapName)
+                        |> Task.attempt ReceiveCreateRoadmapResponse
+            in
+            ( updatedModel, cmd )
+
+        NewRoadmapName name ->
+            ( { model | newRoadmapName = name }, Cmd.none )
 
 
 
@@ -356,6 +401,9 @@ viewBody model =
 
         Router.Profile ->
             Views.Profile.view model
+
+        Router.NewRoadmap ->
+            Views.NewRoadmap.view model AttemptCreateRoadmap NewRoadmapName
 
         Router.Unknown ->
             div [] [ text "Unknown page!" ]

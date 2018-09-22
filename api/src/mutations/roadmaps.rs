@@ -7,11 +7,15 @@ use database;
 use database_schema::roadmaps;
 use graphql;
 
-pub fn create(name: String, connection: &PgConnection) -> Result<graphql::Roadmap, Error> {
+pub fn create(
+    name: String,
+    author_id: i32,
+    connection: &PgConnection,
+) -> Result<graphql::Roadmap, Error> {
     debug!("Attempting to insert a roadmap with name: {}", name);
 
     let roadmap: database::Roadmap = insert_into(roadmaps::table)
-        .values(roadmaps::name.eq(&name))
+        .values((roadmaps::name.eq(&name), roadmaps::author_id.eq(author_id)))
         .get_result(connection)?;
 
     Ok(roadmap.into())

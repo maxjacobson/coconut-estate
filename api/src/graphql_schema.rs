@@ -55,8 +55,13 @@ graphql_object!(MutationRoot: RequestContext |&self| {
     }
 
     field createRoadmap(&executor, name: String) -> FieldResult<graphql::Roadmap> {
-        let connection = &executor.context().pool.get()?;
-        Ok(mutations::roadmaps::create(name, &connection)?)
+        let context = executor.context();
+        let connection = &context.pool.get()?;
+        let id = match context.claims.as_ref() {
+            Some(claims) => claims.id,
+            None => Err(MissingClaims)?,
+        };
+        Ok(mutations::roadmaps::create(name, id, &connection)?)
     }
 
     field signIn(&executor, email_or_username: String, password: String) -> FieldResult<graphql::SignIn> {

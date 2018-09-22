@@ -9,6 +9,7 @@ import Views.Helpers
 view model =
     div [ class "roadmaps-list" ]
         [ h2 [] [ text "Roadmaps" ]
+        , addRoadmap model
         , case model.roadmapsList of
             Just result ->
                 case result of
@@ -32,3 +33,14 @@ view model =
             Nothing ->
                 text "Loading..."
         ]
+
+
+addRoadmap model =
+    case model.userToken of
+        Just token ->
+            div [ class "add-roadmap-link" ]
+                [ a [ href "/roadmaps/new" ] [ text "Add roadmap" ]
+                ]
+
+        Nothing ->
+            text ""
