@@ -432,6 +432,9 @@ viewBody model =
         Router.About ->
             div [] [ text "The place to go when you're not sure where to even start." ]
 
+        Router.Admin ->
+            div [] [ text "admin tk" ]
+
         Router.Contact ->
             Views.Contact.view model
 
@@ -464,6 +467,7 @@ viewFooter model =
             [ footerLink "/" "roadmaps" [ Router.Roadmaps, Router.NewRoadmap ] model.route
             , footerLink "/about" "about" [ Router.About ] model.route
             , footerLink "/contact" "contact" [ Router.Contact ] model.route
+            , footerLink "/admin" "admin" [ Router.Admin ] model.route
             ]
         ]
 
