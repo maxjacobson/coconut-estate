@@ -27,7 +27,7 @@ title route =
                     "profile"
 
                 NewRoadmap ->
-                    "Add a new roadmap"
+                    "add a new roadmap"
 
                 Unknown ->
                     "???"
