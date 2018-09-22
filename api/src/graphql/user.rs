@@ -10,6 +10,7 @@ pub struct User {
     email: String,
     updated_at: NaiveDateTime,
     username: String,
+    email_verified: bool,
 }
 
 impl From<database::User> for User {
@@ -20,6 +21,7 @@ impl From<database::User> for User {
             id: user.id,
             updated_at: user.updated_at,
             username: user.username,
+            email_verified: user.email_verified,
         }
     }
 }

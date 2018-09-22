@@ -13,7 +13,18 @@ view model =
                     Ok details ->
                         div [ class "profile-details" ]
                             [ p []
-                                [ text ("Welcome, " ++ details.username)
+                                [ text ("Welcome, " ++ details.username ++ ".")
+                                ]
+                            , p []
+                                [ if details.emailVerified then
+                                    text "Great job, you've verified your email address"
+
+                                  else
+                                    span []
+                                        [ text "Email not yet verified: "
+                                        , code [] [ text details.email ]
+                                        , text ". Note: I haven't yet implemented a way for you to verify your email, but ... it's still true, though."
+                                        ]
                                 ]
                             ]
 
