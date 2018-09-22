@@ -374,55 +374,54 @@ view model =
     { title = Copy.title model.route
     , body =
         [ div [ class "body" ]
-            [ viewSignin model
-            , viewTitle model
-            , viewBody model
+            [ div [ class "everything-but-footer" ]
+                [ viewHeader model
+                , viewBody model
+                ]
             , viewFooter model
             ]
         ]
     }
 
 
-viewSignin : Model -> Html Msg
-viewSignin model =
-    div [ class "sign-in-cta-or-profile" ]
-        [ case model.userToken of
-            Just token ->
-                div []
-                    [ span [ class "profile-link" ]
-                        [ a [ href "/profile", class (routeActiveHtmlClass [ Router.Profile, Router.EditProfile ] model.route) ]
-                            [ text "Profile"
+viewHeader : Model -> Html Msg
+viewHeader model =
+    div [ class "top-of-web-page" ]
+        [ header []
+            [ if model.route == Router.Roadmaps then
+                h1 [] [ text Copy.headerTitle ]
+
+              else
+                h1 [] [ a [ href "/" ] [ text Copy.headerTitle ] ]
+            ]
+        , div [ class "sign-in-cta-or-profile" ]
+            [ case model.userToken of
+                Just token ->
+                    div []
+                        [ span [ class "profile-link" ]
+                            [ a [ href "/profile", class (routeActiveHtmlClass [ Router.Profile, Router.EditProfile ] model.route) ]
+                                [ text "Profile"
+                                ]
+                            ]
+                        , span [ class "sign-out-link" ]
+                            [ button [ onClick SignOut ]
+                                [ text "Sign out"
+                                ]
                             ]
                         ]
-                    , span [ class "sign-out-link" ]
-                        [ button [ onClick SignOut ]
-                            [ text "Sign out"
+
+                Nothing ->
+                    -- TODO: figure out a way to avoid the duplication in providing
+                    -- an href here and then the same value in the Router module
+                    div []
+                        [ a [ href "/sign-in", class "sign-in-link", class (routeActiveHtmlClass [ Router.SignInPage ] model.route) ]
+                            [ text "Sign in"
                             ]
+                        , span [] [ text ", " ]
+                        , a [ href "/sign-up", class "sign-up-link", class (routeActiveHtmlClass [ Router.SignUpPage ] model.route) ]
+                            [ text "Sign up" ]
                         ]
-                    ]
-
-            Nothing ->
-                -- TODO: figure out a way to avoid the duplication in providing
-                -- an href here and then the same value in the Router module
-                div []
-                    [ a [ href "/sign-in", class "sign-in-link", class (routeActiveHtmlClass [ Router.SignInPage ] model.route) ]
-                        [ text "Sign in"
-                        ]
-                    , span [] [ text ", " ]
-                    , a [ href "/sign-up", class "sign-up-link", class (routeActiveHtmlClass [ Router.SignUpPage ] model.route) ]
-                        [ text "Sign up" ]
-                    ]
-        ]
-
-
-viewTitle : Model -> Html Msg
-viewTitle model =
-    header []
-        [ if model.route == Router.Roadmaps then
-            h1 [] [ text Copy.headerTitle ]
-
-          else
-            h1 [] [ a [ href "/" ] [ text Copy.headerTitle ] ]
+            ]
         ]
 
 

@@ -2,11 +2,38 @@ html {
   font-family: sans-serif;
 }
 
+html, body {
+  height: 100%;
+}
+
 .body {
   max-width: 640px;
   margin: 0 auto;
   padding: 10px;
+  min-height: 75%;
+
+  display: flex;
+  flex-direction: column;
 }
+
+.everything-but-footer {
+  flex: 1 0 auto;
+}
+
+.top-of-web-page {
+  display: flex;
+  align-content: space-between;
+}
+
+.top-of-web-page header {
+  display: inline-block;
+  flex-grow: 2;
+}
+
+.top-of-web-page .sign-in-cta-or-profile {
+  display: inline-block;
+}
+
 
 header h1 {
   color: #3B9EDB;
@@ -21,8 +48,8 @@ a.active {
   font-weight: bold;
 }
 
-.sign-in-cta-or-profile {
-  float: right;
+footer {
+  flex-shrink: 0;
 }
 
 footer ul {
