@@ -8,4 +8,4 @@ type alias UserToken =
 port saveToken : String -> Cmd msg
 
 
-port clearToken : String -> Cmd msg
+port clearToken : () -> Cmd msg
