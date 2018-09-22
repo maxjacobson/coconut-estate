@@ -16,6 +16,7 @@ table! {
         created_at -> Timestamp,
         updated_at -> Timestamp,
         username -> Varchar,
+        email_verified -> Bool,
     }
 }
 
