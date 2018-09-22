@@ -26,8 +26,7 @@ pub fn create(
             users::email.eq(email),
             users::password_hash.eq(password_hash),
             users::username.eq(username),
-        ))
-        .get_result(connection)?;
+        )).get_result(connection)?;
 
     Ok(user.into())
 }

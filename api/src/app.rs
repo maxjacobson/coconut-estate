@@ -42,17 +42,16 @@ impl App {
                 pool,
                 jwt_secret,
             }).middleware(middleware::Logger::default())
-                .configure(|app| {
-                    Cors::for_app(app)
-                        .allowed_origin(&cors_allowed_origin)
-                        .resource("/graphql", |r| {
-                            r.method(Method::POST).with(respond_to_graphql_request)
-                        })
-                        .register()
-                })
+            .configure(|app| {
+                Cors::for_app(app)
+                    .allowed_origin(&cors_allowed_origin)
+                    .resource("/graphql", |r| {
+                        r.method(Method::POST).with(respond_to_graphql_request)
+                    }).register()
+            })
         }).bind(&binding)
-            .expect(&format!("Can not bind to {}", binding))
-            .run();
+        .expect(&format!("Can not bind to {}", binding))
+        .run();
     }
 
     fn read_env(var: &str) -> String {

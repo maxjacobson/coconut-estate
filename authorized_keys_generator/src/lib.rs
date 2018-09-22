@@ -10,7 +10,11 @@ extern crate reqwest;
 use reqwest::Client;
 
 #[derive(Fail, Debug)]
-#[fail(display = "Could not fetch keys for {} because {}", username, status)]
+#[fail(
+    display = "Could not fetch keys for {} because {}",
+    username,
+    status
+)]
 struct UnexpectedStatusCode {
     status: reqwest::StatusCode,
     username: String,

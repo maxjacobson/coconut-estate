@@ -2,7 +2,7 @@
 
 ## setting up your dev environment
 
-* Install Rust 1.28+ <https://rustup.rs/>
+* Install Rust 1.29+ <https://rustup.rs/>
 * Install Terraform
 * Install elm 0.19.0
 * Install elm-format 0.8.0 for elm 0.19.0

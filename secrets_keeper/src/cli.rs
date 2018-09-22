@@ -22,8 +22,7 @@ impl App {
                             .help("What to bind the service to (e.g. localhost:5002)")
                             .required(true)
                             .takes_value(true),
-                    )
-                    .arg(
+                    ).arg(
                         Arg::with_name("location")
                             .short("l")
                             .long("location")
@@ -32,8 +31,7 @@ impl App {
                             .required(true)
                             .takes_value(true),
                     ),
-            )
-            .get_matches();
+            ).get_matches();
 
         if let Some(matches) = matches.subcommand_matches("run") {
             let binding = matches

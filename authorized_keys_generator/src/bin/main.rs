@@ -24,8 +24,7 @@ fn main() {
                 .multiple(true)
                 .takes_value(true)
                 .required(true),
-        )
-        .get_matches();
+        ).get_matches();
 
     if let Some(raw_usernames) = matches.values_of("usernames") {
         println!(

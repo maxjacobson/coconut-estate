@@ -35,8 +35,7 @@ impl User {
                 users::email
                     .eq(email_or_username)
                     .or(users::username.eq(email_or_username)),
-            )
-            .first(connection);
+            ).first(connection);
 
         match user {
             Ok(user) => Ok(Some(user)),
