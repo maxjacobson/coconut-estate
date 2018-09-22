@@ -11,6 +11,7 @@ type Route
     | SignInPage
     | SignUpPage
     | Profile
+    | EditProfile
     | NewRoadmap
     | Unknown
 
@@ -38,5 +39,6 @@ parse =
         , Url.Parser.map SignInPage (s "sign-in")
         , Url.Parser.map SignUpPage (s "sign-up")
         , Url.Parser.map Profile (s "profile")
+        , Url.Parser.map EditProfile (s "profile" </> s "edit")
         , Url.Parser.map NewRoadmap (s "roadmaps" </> s "new")
         ]

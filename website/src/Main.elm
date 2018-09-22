@@ -3,6 +3,7 @@ module Main exposing (Model, Msg(..), footerLink, init, main, subscriptions, upd
 import Api.Mutations.CreateRoadmap
 import Api.Mutations.SignIn
 import Api.Mutations.SignUp
+import Api.Mutations.UpdateProfile
 import Api.Queries.Profile
 import Api.Queries.Roadmaps
 import Api.Sender
@@ -18,6 +19,7 @@ import Task exposing (Task)
 import Token
 import Url
 import Views.Contact
+import Views.EditProfile
 import Views.Helpers
 import Views.NewRoadmap
 import Views.Profile
@@ -70,6 +72,9 @@ type alias Model =
     , createRoadmapError : Maybe GraphQLClient.Error
     , currentlyCreatingRoadmap : Bool
     , newRoadmapName : String
+    , currentlyUpdatingProfile : Bool
+    , editProfilePassword : String
+    , updateProfileError : Maybe GraphQLClient.Error
     }
 
 
@@ -104,6 +109,9 @@ init flags url key =
             , createRoadmapError = Nothing
             , currentlyCreatingRoadmap = False
             , newRoadmapName = ""
+            , currentlyUpdatingProfile = False
+            , editProfilePassword = ""
+            , updateProfileError = Nothing
             }
 
         cmd =
@@ -122,6 +130,8 @@ type Msg
     | AttemptSignIn
     | AttemptSignUp
     | AttemptCreateRoadmap
+    | AttemptUpdateProfile
+    | EditProfilePassword String
     | NewRoadmapName String
     | ReceiveCreateRoadmapResponse (Result GraphQLClient.Error Api.Mutations.CreateRoadmap.CreatedRoadmap)
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
@@ -129,6 +139,7 @@ type Msg
     | ReceivePostSignUpSignInResponse (Result GraphQLClient.Error String)
     | ReceiveSignUpResponse (Result GraphQLClient.Error Api.Mutations.SignUp.SignedUpUser)
     | ReceiveRoadmapsListResponse (Result GraphQLClient.Error (List Api.Queries.Roadmaps.Roadmap))
+    | ReceiveUpdateProfileResponse (Result GraphQLClient.Error Api.Mutations.UpdateProfile.UpdatedProfile)
     | SignInEmailOrUsername String
     | SignInPassword String
     | SignUpEmail String
@@ -169,6 +180,9 @@ update msg model =
                         , newRoadmapName = ""
                         , currentlyCreatingRoadmap = False
                         , createRoadmapError = Nothing
+                        , currentlyUpdatingProfile = False
+                        , editProfilePassword = ""
+                        , updateProfileError = Nothing
                     }
 
                 cmd =
@@ -286,6 +300,21 @@ update msg model =
                 Err e ->
                     ( { model | createRoadmapError = Just e, currentlyCreatingRoadmap = False }, Cmd.none )
 
+        ReceiveUpdateProfileResponse result ->
+            case result of
+                Ok updatedProfile ->
+                    let
+                        updatedModel =
+                            { model | currentlyUpdatingProfile = False }
+
+                        cmd =
+                            Browser.Navigation.pushUrl model.key "/profile"
+                    in
+                    ( updatedModel, cmd )
+
+                Err e ->
+                    ( { model | updateProfileError = Just e, currentlyUpdatingProfile = False }, Cmd.none )
+
         SignOut ->
             ( { model | userToken = Nothing }
             , Cmd.batch
@@ -309,6 +338,22 @@ update msg model =
 
         NewRoadmapName name ->
             ( { model | newRoadmapName = name }, Cmd.none )
+
+        EditProfilePassword password ->
+            ( { model | editProfilePassword = password }, Cmd.none )
+
+        AttemptUpdateProfile ->
+            let
+                updatedModel =
+                    { model | currentlyUpdatingProfile = True, updateProfileError = Nothing }
+
+                cmd =
+                    Api.Sender.sendMutationRequest model.apiUrl
+                        model.userToken
+                        (Api.Mutations.UpdateProfile.buildRequest model.editProfilePassword)
+                        |> Task.attempt ReceiveUpdateProfileResponse
+            in
+            ( updatedModel, cmd )
 
 
 
@@ -401,6 +446,9 @@ viewBody model =
 
         Router.Profile ->
             Views.Profile.view model
+
+        Router.EditProfile ->
+            Views.EditProfile.view model AttemptUpdateProfile EditProfilePassword
 
         Router.NewRoadmap ->
             Views.NewRoadmap.view model AttemptCreateRoadmap NewRoadmapName

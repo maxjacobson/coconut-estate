@@ -26,6 +26,9 @@ title route =
                 Profile ->
                     "profile"
 
+                EditProfile ->
+                    "edit profile"
+
                 NewRoadmap ->
                     "add a new roadmap"
 

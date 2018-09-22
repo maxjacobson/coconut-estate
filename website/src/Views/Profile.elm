@@ -13,6 +13,9 @@ view model =
                     Ok details ->
                         div [ class "profile-details" ]
                             [ p []
+                                [ a [ href "/profile/edit" ] [ text "Edit profile" ]
+                                ]
+                            , p []
                                 [ text ("Welcome, " ++ details.username ++ ".")
                                 ]
                             , p []
