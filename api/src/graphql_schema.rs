@@ -54,6 +54,17 @@ graphql_object!(MutationRoot: RequestContext |&self| {
         Ok(mutations::users::create(email, password, username, connection)?)
     }
 
+    field updateUser(&executor, password: Option<String>) -> FieldResult<graphql::User> {
+        let context = executor.context();
+        let connection = &context.pool.get()?;
+        let id = match context.claims.as_ref() {
+            Some(claims) => claims.id,
+            None => Err(MissingClaims)?,
+        };
+
+        Ok(mutations::users::update(id, password, connection)?)
+    }
+
     field createRoadmap(&executor, name: String) -> FieldResult<graphql::Roadmap> {
         let context = executor.context();
         let connection = &context.pool.get()?;
