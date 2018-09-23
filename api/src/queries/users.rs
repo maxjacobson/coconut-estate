@@ -10,3 +10,10 @@ pub fn find(id: i32, connection: &PgConnection) -> Result<User, Error> {
     let user = database::User::find(id, connection)?;
     Ok(user.into())
 }
+
+pub fn all(connection: &PgConnection) -> Result<Vec<User>, Error> {
+    debug!("Attempting to look up all users");
+
+    let users = database::User::all(connection)?;
+    Ok(users.iter().map(|user| user.into()).collect())
+}

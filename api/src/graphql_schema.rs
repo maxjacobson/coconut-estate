@@ -8,14 +8,19 @@ use queries;
 
 impl juniper::Context for RequestContext {}
 
-struct MissingClaims;
+enum ClaimsError {
+    Missing,
+    Insufficient,
+}
 
-impl From<MissingClaims> for juniper::FieldError {
-    fn from(_e: MissingClaims) -> juniper::FieldError {
-        juniper::FieldError::new(
-            "Can't access this resource without providing a token",
-            juniper::Value::null(),
-        )
+impl From<ClaimsError> for juniper::FieldError {
+    fn from(e: ClaimsError) -> juniper::FieldError {
+        let msg = match e {
+            ClaimsError::Missing => "Can't access this resource without providing a token",
+            ClaimsError::Insufficient => "Token does not grant access to this resource",
+        };
+
+        juniper::FieldError::new(msg, juniper::Value::null())
     }
 }
 
@@ -38,11 +43,26 @@ graphql_object!(QueryRoot: RequestContext |&self| {
         let connection = &context.pool.get()?;
         let id = match context.claims.as_ref() {
             Some(claims) => claims.id,
-            None => Err(MissingClaims)?,
+            None => Err(ClaimsError::Missing)?,
         };
 
-        // let id = context.claims.as_ref().unwrap().id; // TODO: don't unwrap
         Ok(queries::users::find(id, connection)?)
+    }
+
+    field users(&executor) -> FieldResult<Vec<graphql::User>> {
+        let context = executor.context();
+        let connection = &context.pool.get()?;
+        let site_admin = match context.claims.as_ref() {
+            Some(claims) => claims.site_admin,
+            None => Err(ClaimsError::Missing)?,
+        };
+
+        if site_admin {
+            Ok(queries::users::all(connection)?)
+        } else {
+            Err(ClaimsError::Insufficient)?
+        }
+
     }
 });
 
@@ -59,7 +79,7 @@ graphql_object!(MutationRoot: RequestContext |&self| {
         let connection = &context.pool.get()?;
         let id = match context.claims.as_ref() {
             Some(claims) => claims.id,
-            None => Err(MissingClaims)?,
+            None => Err(ClaimsError::Missing)?,
         };
 
         Ok(mutations::users::update(id, password, connection)?)
@@ -70,7 +90,7 @@ graphql_object!(MutationRoot: RequestContext |&self| {
         let connection = &context.pool.get()?;
         let id = match context.claims.as_ref() {
             Some(claims) => claims.id,
-            None => Err(MissingClaims)?,
+            None => Err(ClaimsError::Missing)?,
         };
         Ok(mutations::roadmaps::create(name, id, &connection)?)
     }

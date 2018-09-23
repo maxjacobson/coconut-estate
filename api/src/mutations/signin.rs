@@ -38,9 +38,9 @@ pub fn create(
     if let Some(user) = database::User::load_from_email_or_username(&email_or_username, connection)?
     {
         if libpasta::verify_password(&user.password_hash, &password) {
-            let token = user.generate_token(jwt_secret);
-
-            Ok(graphql::SignIn { token })
+            Ok(graphql::SignIn {
+                token: user.generate_token(jwt_secret),
+            })
         } else {
             debug!("{} provided a bad password", email_or_username);
             Err(CreateSignInFailure::NoMatch)

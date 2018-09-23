@@ -16,6 +16,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
     pub username: String,
     pub email_verified: bool,
+    pub site_admin: bool,
 }
 
 impl User {
@@ -23,6 +24,10 @@ impl User {
         database_schema::users::table
             .find(id)
             .get_result(connection)
+    }
+
+    pub fn all(connection: &PgConnection) -> Result<Vec<Self>, Error> {
+        database_schema::users::table.load(connection)
     }
 
     pub fn load_from_email_or_username(
@@ -46,7 +51,10 @@ impl User {
     }
 
     pub fn generate_token(&self, secret: &str) -> String {
-        let my_claims = Claims { id: self.id };
+        let my_claims = Claims {
+            id: self.id,
+            site_admin: self.site_admin,
+        };
 
         jsonwebtoken::encode(
             &jsonwebtoken::Header::default(),

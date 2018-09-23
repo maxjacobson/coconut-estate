@@ -4,6 +4,7 @@ import Api.Mutations.CreateRoadmap
 import Api.Mutations.SignIn
 import Api.Mutations.SignUp
 import Api.Mutations.UpdateProfile
+import Api.Queries.AdminUsers
 import Api.Queries.Profile
 import Api.Queries.Roadmaps
 import Api.Sender
@@ -18,6 +19,7 @@ import Router exposing (Route(..))
 import Task exposing (Task)
 import Token
 import Url
+import Views.Admin
 import Views.Contact
 import Views.EditProfile
 import Views.Helpers
@@ -75,6 +77,7 @@ type alias Model =
     , currentlyUpdatingProfile : Bool
     , editProfilePassword : String
     , updateProfileError : Maybe GraphQLClient.Error
+    , adminUsersList : Maybe (Result GraphQLClient.Error (List Api.Queries.AdminUsers.User))
     }
 
 
@@ -112,6 +115,7 @@ init flags url key =
             , currentlyUpdatingProfile = False
             , editProfilePassword = ""
             , updateProfileError = Nothing
+            , adminUsersList = Nothing
             }
 
         cmd =
@@ -133,6 +137,7 @@ type Msg
     | AttemptUpdateProfile
     | EditProfilePassword String
     | NewRoadmapName String
+    | ReceiveAdminUsersResponse (Result GraphQLClient.Error (List Api.Queries.AdminUsers.User))
     | ReceiveCreateRoadmapResponse (Result GraphQLClient.Error Api.Mutations.CreateRoadmap.CreatedRoadmap)
     | ReceiveProfileResponse (Result GraphQLClient.Error Api.Queries.Profile.Profile)
     | ReceiveSignInResponse (Result GraphQLClient.Error String)
@@ -183,6 +188,7 @@ update msg model =
                         , currentlyUpdatingProfile = False
                         , editProfilePassword = ""
                         , updateProfileError = Nothing
+                        , adminUsersList = Nothing
                     }
 
                 cmd =
@@ -223,6 +229,9 @@ update msg model =
                         |> Task.attempt ReceiveSignUpResponse
             in
             ( updatedModel, cmd )
+
+        ReceiveAdminUsersResponse result ->
+            ( { model | adminUsersList = Just result }, Cmd.none )
 
         ReceiveProfileResponse result ->
             ( { model | profileDetails = Just result }, Cmd.none )
@@ -436,6 +445,9 @@ viewBody model =
                     ]
                 ]
 
+        Router.AdminUsers ->
+            Views.Admin.view model
+
         Router.Contact ->
             Views.Contact.view model
 
@@ -468,6 +480,19 @@ viewFooter model =
             [ footerLink "/" "roadmaps" [ Router.Roadmaps, Router.NewRoadmap ] model.route
             , footerLink "/about" "about" [ Router.About ] model.route
             , footerLink "/contact" "contact" [ Router.Contact ] model.route
+            , case Token.decodeClaims model.userToken of
+                Just (Ok claims) ->
+                    if claims.siteAdmin == True then
+                        footerLink "/admin" "admin" [ Router.AdminUsers ] model.route
+
+                    else
+                        text ""
+
+                Just (Err e) ->
+                    text ""
+
+                Nothing ->
+                    text ""
             ]
         ]
 
@@ -493,6 +518,13 @@ routeActiveHtmlClass targetRouteFamily currentRoute =
 cmdForRoute : Route -> Model -> Cmd Msg
 cmdForRoute route model =
     case route of
+        -- Load users list when visiting admin users page
+        Router.AdminUsers ->
+            Api.Sender.sendQueryRequest model.apiUrl
+                model.userToken
+                Api.Queries.AdminUsers.buildListRequest
+                |> Task.attempt ReceiveAdminUsersResponse
+
         -- Load user profile when visiting profile page
         Router.Profile ->
             Api.Sender.sendQueryRequest model.apiUrl
@@ -507,24 +539,21 @@ cmdForRoute route model =
                 Api.Queries.Roadmaps.buildListRequest
                 |> Task.attempt ReceiveRoadmapsListResponse
 
-        -- Redirect away if already logged in
         Router.SignInPage ->
-            case model.userToken of
-                Just token ->
-                    Browser.Navigation.pushUrl model.key "/"
+            redirectIfAlreadyLoggedIn model
 
-                Nothing ->
-                    Cmd.none
-
-        -- Redirect away if already logged in
         Router.SignUpPage ->
-            case model.userToken of
-                Just token ->
-                    Browser.Navigation.pushUrl model.key "/"
-
-                Nothing ->
-                    Cmd.none
+            redirectIfAlreadyLoggedIn model
 
         -- Don't do anything special when visiting other pages
         _ ->
+            Cmd.none
+
+
+redirectIfAlreadyLoggedIn model =
+    case model.userToken of
+        Just token ->
+            Browser.Navigation.pushUrl model.key "/"
+
+        Nothing ->
             Cmd.none

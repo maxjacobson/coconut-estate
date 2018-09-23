@@ -14,6 +14,9 @@ title route =
                 About ->
                     "about"
 
+                AdminUsers ->
+                    "users - admin"
+
                 Contact ->
                     "contact"
 

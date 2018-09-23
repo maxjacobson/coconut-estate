@@ -25,3 +25,16 @@ impl From<database::User> for User {
         }
     }
 }
+
+impl<'a> From<&'a database::User> for User {
+    fn from(user: &database::User) -> User {
+        User {
+            created_at: user.created_at,
+            email: user.email.clone(),
+            id: user.id,
+            updated_at: user.updated_at,
+            username: user.username.clone(),
+            email_verified: user.email_verified,
+        }
+    }
+}

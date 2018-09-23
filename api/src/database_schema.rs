@@ -17,6 +17,7 @@ table! {
         updated_at -> Timestamp,
         username -> Varchar,
         email_verified -> Bool,
+        site_admin -> Bool,
     }
 }
 
