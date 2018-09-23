@@ -17,5 +17,6 @@ RUN curl https://sh.rustup.rs -sSf | \
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN cargo install --quiet diesel_cli --no-default-features --features postgres && \
-    diesel --version | grep --quiet "diesel 1.3" && \
-    rustup component add rustfmt-preview
+    diesel --version | grep --quiet "diesel 1.3"
+
+RUN rustup component add rustfmt-preview
