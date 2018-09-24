@@ -520,10 +520,12 @@ cmdForRoute route model =
     case route of
         -- Load users list when visiting admin users page
         Router.AdminUsers ->
-            Api.Sender.sendQueryRequest model.apiUrl
-                model.userToken
-                Api.Queries.AdminUsers.buildListRequest
-                |> Task.attempt ReceiveAdminUsersResponse
+            ifSiteAdmin model
+                (Api.Sender.sendQueryRequest model.apiUrl
+                    model.userToken
+                    Api.Queries.AdminUsers.buildListRequest
+                    |> Task.attempt ReceiveAdminUsersResponse
+                )
 
         -- Load user profile when visiting profile page
         Router.Profile ->
@@ -557,3 +559,16 @@ redirectIfAlreadyLoggedIn model =
 
         Nothing ->
             Cmd.none
+
+
+ifSiteAdmin model callback =
+    case Token.decodeClaims model.userToken of
+        Just (Ok claims) ->
+            if claims.siteAdmin == True then
+                callback
+
+            else
+                Browser.Navigation.pushUrl model.key "/"
+
+        _ ->
+            Browser.Navigation.pushUrl model.key "/"
