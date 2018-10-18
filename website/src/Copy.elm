@@ -8,31 +8,31 @@ title route =
     let
         prefix =
             case route of
-                Roadmaps ->
+                Roadmaps list ->
                     "roadmaps"
 
                 About ->
                     "about"
 
-                AdminUsers ->
+                AdminUsers list ->
                     "users - admin"
 
                 Contact ->
                     "contact"
 
-                SignInPage ->
+                SignInPage details ->
                     "sign-in"
 
-                SignUpPage ->
+                SignUpPage details ->
                     "sign-up"
 
-                Profile ->
+                Profile profile ->
                     "profile"
 
-                EditProfile ->
+                EditProfile details ->
                     "edit profile"
 
-                NewRoadmap ->
+                NewRoadmap details ->
                     "add a new roadmap"
 
                 Unknown ->

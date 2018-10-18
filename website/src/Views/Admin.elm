@@ -5,12 +5,12 @@ import Html.Attributes exposing (href)
 import Views.Helpers
 
 
-view model =
+view model list =
     div []
         [ h2 [] [ text "Admin" ]
         , p [] [ text "Welcome to the admin section." ]
         , h3 [] [ text "Users" ]
-        , case model.adminUsersList of
+        , case list of
             Just result ->
                 case result of
                     Ok users ->

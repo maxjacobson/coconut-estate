@@ -13,12 +13,12 @@ var app = Elm.Main.init({
   flags,
 });
 
-app.ports.saveToken.subscribe(function(data) {
-  window.localStorage.setItem(TOKEN_KEY, data);
-});
+// app.ports.saveToken.subscribe(function(data) {
+//   window.localStorage.setItem(TOKEN_KEY, data);
+// });
 
-app.ports.clearToken.subscribe(function(_data) {
-  window.localStorage.removeItem(TOKEN_KEY);
-});
+// app.ports.clearToken.subscribe(function(_data) {
+//   window.localStorage.removeItem(TOKEN_KEY);
+// });
 
 registerServiceWorker();
