@@ -28,7 +28,7 @@ resource "digitalocean_volume" "disk" {
 
 # Server to run the secrets keeper web service on
 resource "digitalocean_droplet" "web" {
-  image              = "ubuntu-16-04-x64"
+  image              = "ubuntu-18-04-x64"
   name               = "secrets-keeper"
   private_networking = true
   region             = "${var.region}"

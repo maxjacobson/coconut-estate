@@ -12,7 +12,7 @@ variable "tags" {
 
 # Server to serve as the bastion
 resource "digitalocean_droplet" "bastion" {
-  image              = "ubuntu-16-04-x64"
+  image              = "ubuntu-18-04-x64"
   name               = "bastion"
   private_networking = true
   region             = "${var.region}"
