@@ -6,6 +6,7 @@ set -ex
 
 echo "Preparing website droplet"
 
+export DEBIAN_FRONTEND=noninteractive
 sudo add-apt-repository --yes ppa:certbot/certbot
 apt-get update
 apt-get upgrade --yes

@@ -6,6 +6,7 @@ set -ex
 
 echo "Preparing bastion droplet"
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade --yes
 apt-get update
@@ -21,3 +22,5 @@ mkdir -p /home/coconut/.ssh
 cp ~/.ssh/authorized_keys /home/coconut/.ssh/authorized_keys
 chown coconut:coconut /home/coconut/.ssh/authorized_keys
 chmod 0600 /home/coconut/.ssh/authorized_keys
+
+echo "all done"

@@ -6,6 +6,7 @@ set -ex
 
 echo "Preparing secrets keeper droplet"
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade --yes
 apt-get update
@@ -48,3 +49,5 @@ systemctl start secrets-keeper.service
 cp /root/nginx.conf /etc/nginx/nginx.conf
 nginx -t # validate configuration file
 systemctl reload nginx
+
+echo "all done"
