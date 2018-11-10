@@ -13,7 +13,7 @@ RUN apt-get update && \
   pkg-config
 
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- -y --default-toolchain 1.30.0
+    sh -s -- -y --default-toolchain 1.30.1
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN cargo install --quiet diesel_cli --no-default-features --features postgres && \
