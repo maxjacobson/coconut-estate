@@ -124,8 +124,12 @@ resource "digitalocean_droplet" "website" {
 }
 
 resource "digitalocean_floating_ip" "website" {
+  region = "${digitalocean_droplet.website.region}"
+}
+
+resource "digitalocean_floating_ip_assignment" "website" {
   droplet_id = "${digitalocean_droplet.website.id}"
-  region     = "${digitalocean_droplet.website.region}"
+  ip_address = "${digitalocean_floating_ip.website.ip_address}"
 }
 
 resource "digitalocean_domain" "website" {
