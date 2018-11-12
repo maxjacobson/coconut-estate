@@ -48,13 +48,17 @@ module "tags" {
 module "secrets_keeper" {
   source = "../modules/secrets_keeper"
 
-  allow_inbound_http_tags = ["${module.tags.api_name}", "${module.tags.bastion_name}"]
-  allow_inbound_ssh_tag   = "${module.tags.bastion_name}"
-  bastion_host            = "${module.bastion.host}"
-  host                    = "${var.host}"
-  region                  = "${var.region}"
-  ssh_keys                = ["${module.ssh_keys.all}"]
-  tags                    = ["${module.tags.secrets_keeper_id}"]
+  allow_inbound_http_tags = [
+    "${module.tags.api_name}",     # Because it needs access to secrets to boot the API
+    "${module.tags.bastion_name}", # So we can tunnel local requests through the bastion
+  ]
+
+  allow_inbound_ssh_tag = "${module.tags.bastion_name}"
+  bastion_host          = "${module.bastion.host}"
+  host                  = "${var.host}"
+  region                = "${var.region}"
+  ssh_keys              = ["${module.ssh_keys.all}"]
+  tag                   = "${module.tags.secrets_keeper_id}"
 }
 
 module "bastion" {
@@ -76,10 +80,29 @@ module "website" {
   ops_email                  = "${var.ops_email}"
   region                     = "${var.region}"
   ssh_keys                   = ["${module.ssh_keys.all}"]
+  website_tag                = "${module.tags.website_id}"
 
+  # TODO: separate this all out so that we can just pass in a single tag
   tags = [
     "${module.tags.website_id}",
-    "${module.tags.api_id}",
     "${module.tags.database_id}",
   ]
+}
+
+module "api" {
+  source = "../modules/api"
+
+  bastion_host = "${module.bastion.host}"
+  host         = "${var.host}"
+  region       = "${var.region}"
+  ssh_keys     = ["${module.ssh_keys.all}"]
+  tag          = "${module.tags.api_id}"
+}
+
+module "database" {
+  source = "../modules/database"
+
+  region   = "${var.region}"
+  ssh_keys = ["${module.ssh_keys.all}"]
+  tag      = "${module.tags.api_id}"
 }

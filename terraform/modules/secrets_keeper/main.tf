@@ -11,19 +11,19 @@ variable "ssh_keys" {
   type = "list"
 }
 
-variable "tags" {
-  type = "list"
-}
+variable "tag" {}
 
 locals {
   domain_name = "secrets.${var.host}"
 }
 
-resource "digitalocean_volume" "disk" {
-  description = "A persistent volume to store secrets on"
-  name        = "secrets-keeper"
-  region      = "${var.region}"
-  size        = "1"
+resource "digitalocean_volume" "secrets_keeper" {
+  description              = "A persistent volume to store secrets on"
+  name                     = "secrets_keeper"
+  region                   = "${var.region}"
+  size                     = "1"
+  initial_filesystem_type  = "ext4"
+  initial_filesystem_label = "secrets-keeper"
 }
 
 # Server to run the secrets keeper web service on
@@ -34,8 +34,7 @@ resource "digitalocean_droplet" "web" {
   region             = "${var.region}"
   size               = "512mb"
   ssh_keys           = ["${var.ssh_keys}"]
-  tags               = ["${var.tags}"]
-  volume_ids         = ["${digitalocean_volume.disk.id}"]
+  tags               = ["${var.tag}"]
 
   provisioner "file" {
     source      = "${path.module}/secrets-keeper-dummy.bash"
@@ -86,11 +85,16 @@ resource "digitalocean_droplet" "web" {
   depends_on = ["digitalocean_firewall.web"]
 }
 
+resource "digitalocean_volume_attachment" "database" {
+  droplet_id = "${digitalocean_droplet.database.id}"
+  volume_id  = "${digitalocean_volume.database.id}"
+}
+
 resource "digitalocean_firewall" "web" {
   name = "secrets-keeper"
 
   # the droplets to apply the rule to
-  tags = ["${var.tags}"]
+  tags = ["${var.tag}"]
 
   inbound_rule = [
     {
