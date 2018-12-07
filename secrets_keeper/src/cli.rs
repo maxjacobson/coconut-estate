@@ -1,6 +1,6 @@
+use crate::location::Location;
+use crate::server::start as start_server;
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
-use location::Location;
-use server::start as start_server;
 
 pub struct App;
 
@@ -22,7 +22,8 @@ impl App {
                             .help("What to bind the service to (e.g. localhost:5002)")
                             .required(true)
                             .takes_value(true),
-                    ).arg(
+                    )
+                    .arg(
                         Arg::with_name("location")
                             .short("l")
                             .long("location")
@@ -31,7 +32,8 @@ impl App {
                             .required(true)
                             .takes_value(true),
                     ),
-            ).get_matches();
+            )
+            .get_matches();
 
         if let Some(matches) = matches.subcommand_matches("run") {
             let binding = matches

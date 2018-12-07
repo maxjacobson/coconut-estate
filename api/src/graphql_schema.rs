@@ -1,10 +1,10 @@
 use juniper::{self, FieldResult, RootNode};
 use std::convert::From;
 
-use graphql;
-use handlers::RequestContext;
-use mutations;
-use queries;
+use crate::graphql;
+use crate::handlers::RequestContext;
+use crate::mutations;
+use crate::queries;
 
 impl juniper::Context for RequestContext {}
 

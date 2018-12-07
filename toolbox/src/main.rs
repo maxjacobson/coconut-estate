@@ -1,20 +1,12 @@
-extern crate clap;
-
-extern crate failure;
 #[macro_use]
 extern crate failure_derive;
-
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-
-extern crate reqwest;
 
 mod clap_helpers;
 mod cli;
 mod environments;
 mod secrets;
 
+use log::error;
 use std::process;
 
 fn main() {

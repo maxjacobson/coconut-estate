@@ -1,5 +1,6 @@
 [package]
 name = "secrets_keeper"
+edition = "2018"
 version = "0.0.1"
 publish = false
 

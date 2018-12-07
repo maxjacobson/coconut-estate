@@ -1,20 +1,11 @@
-#[macro_use]
-extern crate log;
-
-extern crate failure;
-#[macro_use]
-extern crate failure_derive;
 use failure::Error;
+use failure_derive::Fail;
 
-extern crate reqwest;
+use log::debug;
 use reqwest::Client;
 
 #[derive(Fail, Debug)]
-#[fail(
-    display = "Could not fetch keys for {} because {}",
-    username,
-    status
-)]
+#[fail(display = "Could not fetch keys for {} because {}", username, status)]
 struct UnexpectedStatusCode {
     status: reqwest::StatusCode,
     username: String,

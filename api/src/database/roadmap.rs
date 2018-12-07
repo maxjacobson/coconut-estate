@@ -1,8 +1,9 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::{PgConnection, QueryDsl, RunQueryDsl};
 use diesel::result::Error;
+use serde_derive::Serialize;
 
-use database_schema;
+use crate::database_schema;
 
 #[derive(Clone, Debug, Queryable, Serialize)]
 pub struct Roadmap {

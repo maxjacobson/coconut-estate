@@ -1,7 +1,8 @@
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 use env_logger;
+use log::info;
 
-use app::App;
+use crate::app::App;
 
 pub struct Api;
 

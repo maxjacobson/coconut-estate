@@ -1,5 +1,6 @@
 [package]
 name = "authorized_keys_generator"
+edition = "2018"
 version = "0.0.1"
 publish = false
 

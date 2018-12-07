@@ -4,10 +4,11 @@ use diesel::result::Error;
 use diesel::update as diesel_update;
 use diesel::PgConnection;
 use libpasta;
+use log::debug;
 
-use database;
-use database_schema::users;
-use graphql;
+use crate::database;
+use crate::database_schema::users;
+use crate::graphql;
 
 pub fn create(
     email: String,
@@ -27,7 +28,8 @@ pub fn create(
             users::email.eq(email),
             users::password_hash.eq(password_hash),
             users::username.eq(username),
-        )).get_result(connection)?;
+        ))
+        .get_result(connection)?;
 
     Ok(user.into())
 }

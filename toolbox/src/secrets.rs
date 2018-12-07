@@ -1,6 +1,6 @@
+use crate::clap_helpers::read_arg;
+use crate::environments::{self, Environment};
 use clap;
-use clap_helpers::read_arg;
-use environments::{self, Environment};
 use failure::Error;
 use reqwest;
 use std::collections::HashMap;

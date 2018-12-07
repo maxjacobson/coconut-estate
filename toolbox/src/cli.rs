@@ -1,7 +1,7 @@
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 use failure::Error;
 
-use secrets;
+use crate::secrets;
 
 #[derive(Fail, Debug)]
 #[fail(display = "No implementation for the provided, apparently valid, input available")]
@@ -35,7 +35,8 @@ impl App {
                                     .help("Specifies which environment to target")
                                     .required(false)
                                     .takes_value(true),
-                            ).arg(
+                            )
+                            .arg(
                                 Arg::with_name("group")
                                     .short("g")
                                     .long("group")
@@ -43,14 +44,16 @@ impl App {
                                     .help("Which group of secrets to read from")
                                     .required(true)
                                     .takes_value(true),
-                            ).arg(
+                            )
+                            .arg(
                                 Arg::with_name("variable")
                                     .help("The environment variable you'd like to read")
                                     .value_name("VARIABLE")
                                     .required(false)
                                     .index(1),
                             ),
-                    ).subcommand(
+                    )
+                    .subcommand(
                         SubCommand::with_name("write")
                             .about("Write secrets to the secrets keeper service")
                             .arg(
@@ -61,7 +64,8 @@ impl App {
                                     .help("Specifies which environment to target")
                                     .required(false)
                                     .takes_value(true),
-                            ).arg(
+                            )
+                            .arg(
                                 Arg::with_name("group")
                                     .short("g")
                                     .long("group")
@@ -69,13 +73,15 @@ impl App {
                                     .help("Which group of secrets does this secret belong to?")
                                     .required(true)
                                     .takes_value(true),
-                            ).arg(
+                            )
+                            .arg(
                                 Arg::with_name("variable")
                                     .help("The environment variable name for the new secret")
                                     .value_name("VARIABLE")
                                     .required(true)
                                     .index(1),
-                            ).arg(
+                            )
+                            .arg(
                                 Arg::with_name("value")
                                     .help("The value of the new secret")
                                     .value_name("VALUE")
@@ -83,7 +89,8 @@ impl App {
                                     .index(2),
                             ),
                     ),
-            ).get_matches();
+            )
+            .get_matches();
 
         if let Some(matches) = matches.subcommand_matches("secrets") {
             secrets::App::lookup(matches)?.run()

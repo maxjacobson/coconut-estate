@@ -3,9 +3,10 @@ use diesel::prelude::{ExpressionMethods, PgConnection, QueryDsl, QueryResult, Ru
 use diesel::result::Error;
 use diesel::BoolExpressionMethods;
 use jsonwebtoken;
+use serde_derive::Serialize;
 
-use auth::Claims;
-use database_schema;
+use crate::auth::Claims;
+use crate::database_schema;
 
 #[derive(Clone, Debug, Queryable, Serialize)]
 pub struct User {
@@ -34,14 +35,15 @@ impl User {
         email_or_username: &str,
         connection: &PgConnection,
     ) -> Result<Option<Self>, Error> {
-        use database_schema::users;
+        use crate::database_schema::users;
 
         let user: QueryResult<User> = users::table
             .filter(
                 users::email
                     .eq(email_or_username)
                     .or(users::username.eq(email_or_username)),
-            ).first(connection);
+            )
+            .first(connection);
 
         match user {
             Ok(user) => Ok(Some(user)),
@@ -60,6 +62,7 @@ impl User {
             &jsonwebtoken::Header::default(),
             &my_claims,
             secret.as_ref(),
-        ).unwrap()
+        )
+        .unwrap()
     }
 }

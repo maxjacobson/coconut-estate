@@ -1,5 +1,5 @@
+use crate::database;
 use chrono::NaiveDateTime;
-use database;
 use std::convert::From;
 
 #[derive(GraphQLObject)]

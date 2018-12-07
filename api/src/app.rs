@@ -3,9 +3,9 @@ use diesel::prelude::PgConnection;
 use diesel::r2d2::ConnectionManager;
 use r2d2;
 
-use handlers::respond_to_graphql_request;
+use crate::handlers::respond_to_graphql_request;
 
-use graphql_schema::{create_schema, Schema};
+use crate::graphql_schema::{create_schema, Schema};
 
 use std::env;
 
@@ -41,15 +41,18 @@ impl App {
                 schema,
                 pool,
                 jwt_secret,
-            }).middleware(middleware::Logger::default())
+            })
+            .middleware(middleware::Logger::default())
             .configure(|app| {
                 Cors::for_app(app)
                     .allowed_origin(&cors_allowed_origin)
                     .resource("/graphql", |r| {
                         r.method(Method::POST).with(respond_to_graphql_request)
-                    }).register()
+                    })
+                    .register()
             })
-        }).bind(&binding)
+        })
+        .bind(&binding)
         .expect(&format!("Can not bind to {}", binding))
         .run();
     }

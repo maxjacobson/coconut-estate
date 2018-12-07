@@ -1,4 +1,6 @@
-use location::Location;
+use crate::location::Location;
+use log::{debug, info};
+use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::fs::{self, OpenOptions};
 use std::io::prelude::*;
@@ -18,7 +20,8 @@ pub fn start(binding: &str, location: Location) -> Result<(), std::net::AddrPars
         secrets
             .and(warp::query::<ReadSecretFilters>())
             .and(location.clone()),
-    ).map(read_secrets);
+    )
+    .map(read_secrets);
 
     let write_secret_route =
         warp::post(secrets_index.and(warp::body::json()).and(location.clone())).map(write_secret);

@@ -15,5 +15,6 @@ pub fn read_arg(matches: &clap::ArgMatches, arg: &str) -> Result<String, Error> 
         .value_of(arg)
         .ok_or_else(|| MissingArgError {
             name: arg.to_string(),
-        })?.to_string())
+        })?
+        .to_string())
 }

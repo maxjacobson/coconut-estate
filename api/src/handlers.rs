@@ -1,11 +1,12 @@
+use crate::app::ServerState;
+use crate::auth::Claims;
 use actix_web::{HttpMessage, HttpRequest, HttpResponse, Json};
-use app::ServerState;
-use auth::Claims;
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;
 use jsonwebtoken;
 use juniper::http::GraphQLRequest;
 use r2d2;
+use serde_derive::{Deserialize, Serialize};
 use serde_json;
 
 pub struct RequestContext {
@@ -34,7 +35,8 @@ pub fn respond_to_graphql_request(
                     token,
                     &state.jwt_secret.as_ref(),
                     &jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
-                ).expect("Decodable bearer token"); // TODO: non-decodable tokens should not panic
+                )
+                .expect("Decodable bearer token"); // TODO: non-decodable tokens should not panic
 
                 Some(token_data.claims)
             })

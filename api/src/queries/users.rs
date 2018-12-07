@@ -1,8 +1,9 @@
 use diesel::result::Error;
 use diesel::PgConnection;
+use log::debug;
 
-use database;
-use graphql::User;
+use crate::database;
+use crate::graphql::User;
 
 pub fn find(id: i32, connection: &PgConnection) -> Result<User, Error> {
     debug!("Attempting to look up current user");

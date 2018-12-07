@@ -2,14 +2,9 @@
 //
 // Usage:
 // bin/authorized-keys-generator --usernames username1 username2 username3
-extern crate authorized_keys_generator;
 use authorized_keys_generator::Generator;
 
-#[macro_use]
-extern crate clap;
-use clap::{App, Arg};
-
-extern crate env_logger;
+use clap::{crate_version, App, Arg};
 
 fn main() {
     env_logger::init();
@@ -24,7 +19,8 @@ fn main() {
                 .multiple(true)
                 .takes_value(true)
                 .required(true),
-        ).get_matches();
+        )
+        .get_matches();
 
     if let Some(raw_usernames) = matches.values_of("usernames") {
         println!(

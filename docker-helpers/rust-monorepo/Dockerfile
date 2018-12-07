@@ -13,10 +13,10 @@ RUN apt-get update && \
   pkg-config
 
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- -y --default-toolchain 1.30.1
+    sh -s -- -y --default-toolchain 1.31.0
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN cargo install --quiet diesel_cli --no-default-features --features postgres && \
     diesel --version | grep --quiet "diesel 1.3"
 
-RUN rustup component add rustfmt-preview
+RUN rustup component add rustfmt
