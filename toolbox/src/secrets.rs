@@ -68,7 +68,7 @@ impl SecretsApp {
                 .send()?,
         };
 
-        self.validate_response(&mut response, reqwest::StatusCode::Ok, true)
+        self.validate_response(&mut response, reqwest::StatusCode::OK, true)
     }
 
     fn write_secret(
@@ -88,7 +88,7 @@ impl SecretsApp {
             .json(&body)
             .send()?;
 
-        self.validate_response(&mut response, reqwest::StatusCode::Created, false)
+        self.validate_response(&mut response, reqwest::StatusCode::CREATED, false)
     }
 
     // N.B.: this might become more complicated later on when tunneling

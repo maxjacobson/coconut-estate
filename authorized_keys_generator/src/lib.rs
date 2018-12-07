@@ -10,11 +10,7 @@ extern crate reqwest;
 use reqwest::Client;
 
 #[derive(Fail, Debug)]
-#[fail(
-    display = "Could not fetch keys for {} because {}",
-    username,
-    status
-)]
+#[fail(display = "Could not fetch keys for {} because {}", username, status)]
 struct UnexpectedStatusCode {
     status: reqwest::StatusCode,
     username: String,
@@ -43,7 +39,7 @@ impl Generator {
                 .send()?;
 
             let status = response.status();
-            if status != reqwest::StatusCode::Ok {
+            if status != reqwest::StatusCode::OK {
                 Err(UnexpectedStatusCode {
                     status: status,
                     username: username.to_string(),
