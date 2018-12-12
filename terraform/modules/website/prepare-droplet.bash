@@ -25,6 +25,7 @@ cp ~/.ssh/authorized_keys /home/coconut/.ssh/authorized_keys
 chown coconut:coconut /home/coconut/.ssh/authorized_keys
 chmod 0600 /home/coconut/.ssh/authorized_keys
 
+# Maybe format the website volume
 if ! blkid /dev/disk/by-id/scsi-0DO_Volume_website | grep --quiet ext4; then
   # format the disk (danger!)
   mkfs.ext4 -F /dev/disk/by-id/scsi-0DO_Volume_website
@@ -49,20 +50,6 @@ mount -o discard,defaults /dev/disk/by-id/scsi-0DO_Volume_database /mnt/database
 echo /dev/disk/by-id/scsi-0DO_Volume_database  /mnt/database ext4 defaults,nofail,discard 0 0 | tee -a /etc/fstab
 
 chown -R coconut:coconut /mnt/database
-
-# Seed the service with a dummy command to run
-application_binary_path="/mnt/website/binary/api"
-if [ ! -f "$application_binary_path" ]; then
-  cp /root/api-dummy.bash "$application_binary_path"
-  chmod 700 "$application_binary_path"
-  chown coconut:coconut "$application_binary_path"
-fi
-
-cp /root/secrets-fetcher.bash /mnt/website/binary/secrets-fetcher
-chmod +x /mnt/website/binary/secrets-fetcher
-
-systemctl enable api.service
-systemctl start api.service
 
 cp /root/postgresql.conf /etc/postgresql/9.5/main/postgresql.conf
 

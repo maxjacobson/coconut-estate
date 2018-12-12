@@ -1,14 +1,22 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-set -ex
+require "open-uri"
+require "json"
 
-bin/prod/build api
+def system!(cmd)
+  system(cmd) or raise
+end
 
-bin/scp deploy-artifacts/api \
-  www.coconutestate.top:/mnt/website/binary/api-new
+system! "bin/prod/build api"
 
-bin/ssh www.coconutestate.top sudo systemctl stop api.service
+droplets_json = `doctl compute droplet list --tag-name api --output json`
+raise unless $?.success?
 
-bin/ssh www.coconutestate.top mv /mnt/website/binary/api-new /mnt/website/binary/api
+JSON.parse(droplets_json).each do |droplet|
+  ip = droplet.fetch("networks").fetch("v4").detect { |network| network.fetch("type") == "public" }.fetch("ip_address")
 
-bin/ssh www.coconutestate.top sudo systemctl restart api.service
+  system! "bin/scp deploy-artifacts/api #{ip}:/mnt/api/binary/api-new"
+  system! "bin/ssh #{ip} sudo systemctl stop api.service"
+  system! "bin/ssh #{ip} mv /mnt/api/binary/api-new /mnt/api/binary/api"
+  system! "bin/ssh #{ip} sudo systemctl restart api.service"
+end

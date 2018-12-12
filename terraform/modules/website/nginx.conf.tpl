@@ -3,7 +3,6 @@ events {
 }
 
 http {
-
   # redirect bare domain to www, to make sure there's only one canonical URL
   # for everything, but that people who request the bare domain still get
   # where they want to go
@@ -13,7 +12,7 @@ http {
   }
 
 
-  # serve the ember front-end by serving files
+  # serve the elm front-end by serving files
   server {
     listen 80 default_server;
     listen [::]:80 default_server;

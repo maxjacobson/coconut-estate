@@ -1,9 +1,12 @@
+# TODO: remove all references to database
 variable "allow_inbound_ssh_tag" {}
+
 variable "allow_inbound_database_tag" {}
 variable "bastion_host" {}
 variable "host" {}
 variable "ops_email" {}
 variable "region" {}
+variable "website_tag" {}
 
 variable "ssh_keys" {
   type = "list"
@@ -20,13 +23,6 @@ resource "digitalocean_volume" "disk" {
   size        = "1"
 }
 
-resource "digitalocean_volume" "database_disk" {
-  description = "A persistent volume to store the database's data on"
-  name        = "database"
-  region      = "${var.region}"
-  size        = "20"
-}
-
 resource "digitalocean_droplet" "website" {
   image              = "ubuntu-16-04-x64"
   name               = "website"
@@ -38,7 +34,6 @@ resource "digitalocean_droplet" "website" {
 
   volume_ids = [
     "${digitalocean_volume.disk.id}",
-    "${digitalocean_volume.database_disk.id}",
   ]
 
   provisioner "file" {
@@ -53,41 +48,8 @@ resource "digitalocean_droplet" "website" {
   }
 
   provisioner "file" {
-    content     = "${data.template_file.secrets_fetcher.rendered}"
-    destination = "/root/secrets-fetcher.bash"
-
-    connection {
-      type         = "ssh"
-      bastion_host = "${var.bastion_host}"
-      bastion_user = "coconut"
-    }
-  }
-
-  provisioner "file" {
     content     = "${data.template_file.nginx.rendered}"
     destination = "/root/nginx.conf"
-
-    connection {
-      type         = "ssh"
-      bastion_host = "${var.bastion_host}"
-      bastion_user = "coconut"
-    }
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.api_service.rendered}"
-    destination = "/etc/systemd/system/api.service"
-
-    connection {
-      type         = "ssh"
-      bastion_host = "${var.bastion_host}"
-      bastion_user = "coconut"
-    }
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.generate_ssl_cert_script.rendered}"
-    destination = "/root/generate-ssl-cert.bash"
 
     connection {
       type         = "ssh"
@@ -123,51 +85,50 @@ resource "digitalocean_droplet" "website" {
   depends_on = ["digitalocean_firewall.website"]
 }
 
-resource "digitalocean_floating_ip" "website" {
-  region = "${digitalocean_droplet.website.region}"
-}
-
-resource "digitalocean_floating_ip_assignment" "website" {
-  droplet_id = "${digitalocean_droplet.website.id}"
-  ip_address = "${digitalocean_floating_ip.website.ip_address}"
-}
-
 resource "digitalocean_domain" "website" {
-  name       = "www.${var.host}"
-  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+  name = "www.${var.host}"
+}
 
-  # Just to make sure all three domains are created before running the provisioner...
-  depends_on = [
-    "digitalocean_domain.website_bare_domain",
-    "digitalocean_domain.website_api_domain",
-    "digitalocean_domain.database_domain",
-  ]
-
-  provisioner "remote-exec" {
-    inline = ["/root/generate-ssl-cert.bash"]
-
-    connection {
-      host         = "${var.host}"
-      type         = "ssh"
-      bastion_host = "bastion.${var.host}"
-      bastion_user = "coconut"
-    }
-  }
+resource "digitalocean_record" "website" {
+  domain = "${digitalocean_domain.website.name}"
+  type   = "A"
+  name   = "website"
+  value  = "${digitalocean_loadbalancer.website.ip}"
 }
 
 resource "digitalocean_domain" "website_bare_domain" {
-  name       = "${var.host}"
-  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+  name = "${var.host}"
 }
 
-resource "digitalocean_domain" "website_api_domain" {
-  name       = "api.${var.host}"
-  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+resource "digitalocean_record" "website_bare_domain" {
+  domain = "${digitalocean_domain.website_bare_domain.name}"
+  type   = "A"
+  name   = "website-bare-domain"
+  value  = "${digitalocean_loadbalancer.website.ip}"
 }
 
-resource "digitalocean_domain" "database_domain" {
-  name       = "db.${var.host}"
-  ip_address = "${digitalocean_floating_ip.website.ip_address}"
+resource "digitalocean_loadbalancer" "website" {
+  name   = "website"
+  region = "${var.region}"
+
+  droplet_tag            = "${var.website_tag}"
+  redirect_http_to_https = true
+
+  forwarding_rule {
+    entry_port     = 80
+    entry_protocol = "http"
+
+    target_port     = 80
+    target_protocol = "http"
+
+    # certificate_id = "${digitalocean_certificate.website.id}"
+  }
+
+  # TODO: turn this back into an http check
+  healthcheck {
+    protocol = "tcp"
+    port     = 22
+  }
 }
 
 resource "digitalocean_firewall" "website" {
@@ -229,38 +190,9 @@ data "template_file" "nginx" {
   }
 }
 
-data "template_file" "generate_ssl_cert_script" {
-  template = "${file("${path.module}/generate-ssl-cert.bash.tpl")}"
-
-  vars {
-    ops_email = "${var.ops_email}"
-
-    api_domain      = "api.${var.host}"
-    bare_domain     = "${var.host}"
-    database_domain = "db.${var.host}"
-    www_domain      = "www.${var.host}"
-  }
-}
-
-data "template_file" "api_service" {
-  template = "${file("${path.module}/api.service.tpl")}"
-
-  vars {
-    cors = "https://www.${var.host}"
-  }
-}
-
 data "template_file" "postgresql_config" {
   template = "${file("${path.module}/postgresql.conf.tpl")}"
 
   # None currently - could stop using a template
   vars {}
-}
-
-data "template_file" "secrets_fetcher" {
-  template = "${file("${path.module}/secrets-fetcher.bash.tpl")}"
-
-  vars {
-    secrets_host = "http://secrets.${var.host}"
-  }
 }
