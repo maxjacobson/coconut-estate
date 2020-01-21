@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (href)
 
 
-view model =
+view =
     div []
         [ h2 [] [ text "Contact" ]
         , p []

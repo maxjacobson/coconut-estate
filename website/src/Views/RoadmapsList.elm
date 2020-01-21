@@ -6,11 +6,11 @@ import Html.Events exposing (onInput, onSubmit)
 import Views.Helpers
 
 
-view model =
+view model list =
     div [ class "roadmaps-list" ]
         [ h2 [] [ text "Roadmaps" ]
         , addRoadmap model
-        , case model.roadmapsList of
+        , case list of
             Just result ->
                 case result of
                     Ok roadmaps ->

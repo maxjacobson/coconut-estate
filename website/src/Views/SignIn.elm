@@ -6,20 +6,20 @@ import Html.Events exposing (onInput, onSubmit)
 import Views.Helpers
 
 
-view model submitMessage emailOrUsernameMessage passwordMessage =
+view details submitMessage emailOrUsernameMessage passwordMessage =
     div [ class "sign-in" ]
         [ Html.form [ onSubmit submitMessage ]
             [ input [ class "emailOrUsername", type_ "text", placeholder "username or email", onInput emailOrUsernameMessage, autofocus True ] []
             , input [ class "password", type_ "password", placeholder "password", onInput passwordMessage ] []
-            , button [ type_ "submit", disabled (cannotAttemptSignIn model) ]
-                [ if model.currentlySigningIn then
+            , button [ type_ "submit", disabled (cannotAttemptSignIn details) ]
+                [ if details.currentlyAttempting then
                     text "Signing in..."
 
                   else
                     text "Sign in"
                 ]
             ]
-        , case model.signInError of
+        , case details.error of
             Just e ->
                 Views.Helpers.viewGraphQLError e
 
@@ -32,10 +32,10 @@ view model submitMessage emailOrUsernameMessage passwordMessage =
 -- HELPERS
 
 
-cannotAttemptSignIn model =
-    model.signInEmailOrUsername
+cannotAttemptSignIn details =
+    details.emailOrUsername
         == ""
-        || model.signInPassword
+        || details.password
         == ""
-        || model.currentlySigningIn
+        || details.currentlyAttempting
         == True
